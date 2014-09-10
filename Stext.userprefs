@@ -1,0 +1,19 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhoneSimulator" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneSimulatorTarget.IPhoneRetina4.7.1" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Views/ConfirmationView.cs">
+    <Files>
+      <File FileName="Table/Cells/ChatBubbleCell.cs" Line="115" Column="115" />
+      <File FileName="AppDelegate.cs" Line="34" Column="34" />
+      <File FileName="Views/Chat/ChatView.cs" Line="5" Column="5" />
+      <File FileName="Views/Chat/ChatListView.cs" Line="49" Column="49" />
+      <File FileName="Table/Cells/ChatCell.cs" Line="35" Column="35" />
+      <File FileName="Views/ConfirmationView.cs" Line="49" Column="49" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Users/weiss/svn/Projects/Securecom/Stext/iOS/Stext/Util/StextUtil.cs" line="34" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

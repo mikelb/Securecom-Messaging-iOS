@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
+    <ProjectTypeGuids>{6BC8ED88-2882-458C-8E55-DFD12B67127B};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProjectGuid>{EDF1A946-3868-4126-9C04-9DF7B60D97CA}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Stext</RootNamespace>
+    <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
+    <AssemblyName>Stext</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <MtouchLink>None</MtouchLink>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchDebug>true</MtouchDebug>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <MtouchLink>None</MtouchLink>
+    <ConsolePause>false</ConsolePause>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhone\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchDebug>true</MtouchDebug>
+    <CodesignKey>iPhone Developer</CodesignKey>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhone\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <ConsolePause>false</ConsolePause>
+    <CodesignKey>iPhone Developer</CodesignKey>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Ad-Hoc|iPhone' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhone\Ad-Hoc</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <BuildIpa>true</BuildIpa>
+    <CodesignProvision>Automatic:AdHoc</CodesignProvision>
+    <CodesignKey>iPhone Distribution</CodesignKey>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'AppStore|iPhone' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhone\AppStore</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodesignKey>iPhone Distribution</CodesignKey>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <ConsolePause>false</ConsolePause>
+    <CodesignProvision>Automatic:AppStore</CodesignProvision>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="monotouch" />
+    <Reference Include="MonoTouch.Dialog-1" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\Default-568h%402x.png" />
+    <BundleResource Include="Images\Titlebar\chat.png" />
+    <BundleResource Include="Images\Titlebar\chatConnect.png" />
+    <BundleResource Include="Images\Icons\check.png" />
+    <BundleResource Include="Images\Chat\chat-bubble-left.png" />
+    <BundleResource Include="Images\Chat\chat-bubble-left%402x.png" />
+    <BundleResource Include="Images\Chat\chat-bubble-right.png" />
+    <BundleResource Include="Images\Chat\chat-bubble-right%402x.png" />
+    <BundleResource Include="Images\Icons\lock.png" />
+    <BundleResource Include="Images\Icons\lock%402x.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 144x144 dark gray SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 144x144 dark gray.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 144x144 light gray SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 144x144 light gray.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 144x144 white SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 144x144 white.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 192x192 dark gray SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 192x192 dark gray.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 192x192 light gray SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 192x192 light gray.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 192x192 white SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 192x192 white.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 48x48 dark gray SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 48x48 dark gray.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 48x48 light gray SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 48x48 light gray.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 48x48 white SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 48x48 white.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 72x72 dark gray SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 72x72 dark gray.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 72x72 light gray SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 72x72 light gray.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 72x72 white SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 72x72 white.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 96x96 dark gray SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 96x96 dark gray.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 96x96 light gray SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 96x96 light gray.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 96x96 white SText.png" />
+    <BundleResource Include="Images\scm\Securecom Mobile 96x96 white.png" />
+    <BundleResource Include="Images\Contact\greenlock.png" />
+    <BundleResource Include="Images\Contact\lock.png" />
+    <BundleResource Include="Resources\Icon.png" />
+    <BundleResource Include="Resources\Icon%402x.png" />
+    <BundleResource Include="Resources\Icon-60%402x.png" />
+    <BundleResource Include="Resources\Icon-Small.png" />
+    <BundleResource Include="Resources\Icon-Small%402x.png" />
+    <BundleResource Include="Resources\Icon-Small-40%402x.png" />
+    <BundleResource Include="Resources\Default.png" />
+    <BundleResource Include="Resources\Default%402x.png" />
+    <BundleResource Include="Images\Icons\lock_30.png" />
+    <BundleResource Include="Images\Chat\greenlock.png" />
+    <BundleResource Include="Images\Chat\lock.png" />
+    <BundleResource Include="Images\Chat\placeholder.png" />
+    <BundleResource Include="Images\Contact\placeholder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Info.plist" />
+    <None Include="Entitlements.plist" />
+    <None Include="Images\scm\.DS_Store" />
+    <None Include="Images\Icons\.DS_Store" />
+    <None Include="Images\Contact\.DS_Store" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Main.cs" />
+    <Compile Include="AppDelegate.cs" />
+    <Compile Include="Util\PickerChangedEventArgs.cs" />
+    <Compile Include="Util\PickerModel.cs" />
+    <Compile Include="Views\RegistrationView.cs" />
+    <Compile Include="Views\RegistrationView.designer.cs">
+      <DependentUpon>RegistrationView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\VerificationView.cs" />
+    <Compile Include="Views\VerificationView.designer.cs">
+      <DependentUpon>VerificationView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ConfirmationView.cs" />
+    <Compile Include="Views\ConfirmationView.designer.cs">
+      <DependentUpon>ConfirmationView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Util\StextUtil.cs" />
+    <Compile Include="Views\Chat\ChatListView.cs" />
+    <Compile Include="Views\Chat\ChatListView.designer.cs">
+      <DependentUpon>ChatListView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Table\Cells\ChatCell.cs" />
+    <Compile Include="Table\Cells\ChatCell.designer.cs">
+      <DependentUpon>ChatCell.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Table\ACustomCell.cs" />
+    <Compile Include="Table\CustomCellGroup.cs" />
+    <Compile Include="Table\CustomCellTableSource.cs" />
+    <Compile Include="Table\ICustomCell.cs" />
+    <Compile Include="Util\Alert.cs" />
+    <Compile Include="Table\Cells\ChatBubbleCell.cs" />
+    <Compile Include="Views\Chat\ChatView.cs" />
+    <Compile Include="Views\Chat\ChatView.designer.cs">
+      <DependentUpon>ChatView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Contact\ContactListView.cs" />
+    <Compile Include="Views\Contact\ContactListView.designer.cs">
+      <DependentUpon>ContactListView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Table\Cells\Contact\ContactListCell.cs" />
+    <Compile Include="Table\Cells\Contact\ContactListCell.designer.cs">
+      <DependentUpon>ContactListCell.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Contact\ContactDetailView.cs" />
+    <Compile Include="Views\Contact\ContactDetailView.designer.cs">
+      <DependentUpon>ContactDetailView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Group\NewGroupView.cs" />
+    <Compile Include="Views\Group\NewGroupView.designer.cs">
+      <DependentUpon>NewGroupView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Table\Cells\Group\GroupMemberCell.cs" />
+    <Compile Include="Table\Cells\Group\GroupMemberCell.designer.cs">
+      <DependentUpon>GroupMemberCell.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Key\MyIdKeyView.cs" />
+    <Compile Include="Views\Key\MyIdKeyView.designer.cs">
+      <DependentUpon>MyIdKeyView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Key\ContactKeysView.cs" />
+    <Compile Include="Views\Key\ContactKeysView.designer.cs">
+      <DependentUpon>ContactKeysView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Table\Cells\Key\ContactKeysCell.cs" />
+    <Compile Include="Table\Cells\Key\ContactKeysCell.designer.cs">
+      <DependentUpon>ContactKeysCell.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Settings\SettingsView.cs" />
+    <Compile Include="Views\Settings\SettingsView.designer.cs">
+      <DependentUpon>SettingsView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Table\Cells\Settings\SettingsCell.cs" />
+    <Compile Include="Table\Cells\Settings\SettingsCell.designer.cs">
+      <DependentUpon>SettingsCell.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Table\Cells\Settings\SettingsHeader.cs" />
+    <Compile Include="Table\Cells\Settings\SettingsHeader.designer.cs">
+      <DependentUpon>SettingsHeader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Table\Cells\Settings\SettingsSubheadingCell.cs" />
+    <Compile Include="Table\Cells\Settings\SettingsSubheadingCell.designer.cs">
+      <DependentUpon>SettingsSubheadingCell.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Images\" />
+    <Folder Include="Views\" />
+    <Folder Include="Util\" />
+    <Folder Include="Images\Icons\" />
+    <Folder Include="Views\Chat\" />
+    <Folder Include="Table\" />
+    <Folder Include="Table\Cells\" />
+    <Folder Include="Images\Chat\" />
+    <Folder Include="Images\scm\" />
+    <Folder Include="Views\Contact\" />
+    <Folder Include="Table\Cells\Contact\" />
+    <Folder Include="Images\Contact\" />
+    <Folder Include="Views\Group\" />
+    <Folder Include="Table\Cells\Group\" />
+    <Folder Include="Views\Key\" />
+    <Folder Include="Table\Cells\Key\" />
+    <Folder Include="Views\Settings\" />
+    <Folder Include="Table\Cells\Settings\" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterfaceDefinition Include="Views\RegistrationView.xib" />
+    <InterfaceDefinition Include="Views\VerificationView.xib" />
+    <InterfaceDefinition Include="Views\ConfirmationView.xib" />
+    <InterfaceDefinition Include="Views\Chat\ChatListView.xib" />
+    <InterfaceDefinition Include="Table\Cells\ChatCell.xib" />
+    <InterfaceDefinition Include="Views\Chat\ChatView.xib" />
+    <InterfaceDefinition Include="Views\Contact\ContactListView.xib" />
+    <InterfaceDefinition Include="Table\Cells\Contact\ContactListCell.xib" />
+    <InterfaceDefinition Include="Views\Contact\ContactDetailView.xib" />
+    <InterfaceDefinition Include="Views\Group\NewGroupView.xib" />
+    <InterfaceDefinition Include="Table\Cells\Group\GroupMemberCell.xib" />
+    <InterfaceDefinition Include="Views\Key\MyIdKeyView.xib" />
+    <InterfaceDefinition Include="Views\Key\ContactKeysView.xib" />
+    <InterfaceDefinition Include="Table\Cells\Key\ContactKeysCell.xib" />
+    <InterfaceDefinition Include="Views\Settings\SettingsView.xib" />
+    <InterfaceDefinition Include="Table\Cells\Settings\SettingsCell.xib" />
+    <InterfaceDefinition Include="Table\Cells\Settings\SettingsHeader.xib" />
+    <InterfaceDefinition Include="Table\Cells\Settings\SettingsSubheadingCell.xib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ITunesArtwork Include="iTunesArtwork" />
+    <ITunesArtwork Include="iTunesArtwork%402x" />
+  </ItemGroup>
+</Project>
