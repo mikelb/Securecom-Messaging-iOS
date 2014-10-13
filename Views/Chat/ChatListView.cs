@@ -6,6 +6,10 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using System.Collections.Generic;
 
+using Xamarin.Contacts;
+using System.Threading.Tasks;
+using System.Linq;
+
 namespace Stext{
 
 
@@ -80,10 +84,42 @@ namespace Stext{
 
 		public void PopulateTable(){
 
-			List<CustomCellGroup> cellGroups = new List<CustomCellGroup> ();
-			tableCellGroup = new CustomCellGroup ();
-			cellGroups.Add (tableCellGroup);
+            List<CustomCellGroup> cellGroups = new List<CustomCellGroup>();
+            tableCellGroup = new CustomCellGroup();
+            cellGroups.Add(tableCellGroup);
 
+            AddressBook book = new AddressBook();
+            book.RequestPermission().ContinueWith(t =>
+            {
+                if (!t.Result)
+                {
+                    Console.WriteLine("Permission denied by user or manifest");
+                    return;
+                }
+
+                int counter = 0;
+                foreach (Contact contact in book.OrderBy(c => c.LastName))
+                {
+                    int idx = counter++;
+                    
+                    ChatCell chatCell = ChatCell.Create();
+                    chatCell.SetHeader(contact.DisplayName);
+                    chatCell.SetSubheading("My latest message");
+                    chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+                    if (idx % 2 == 1)
+                        chatCell.MarkAsRead();
+                    tableCellGroup.Cells.Add(chatCell);
+                }
+
+                source = new CustomCellTableSource(cellGroups);
+                source.RowSelectedAction = RowSelected;
+
+                table.Source = source;
+
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+
+
+            /*
 			for (int x = 0; x <= 1; x++) {
 				ChatCell chatCell = ChatCell.Create ();
 				chatCell.SetHeader("John Doe");
@@ -99,13 +135,9 @@ namespace Stext{
 				chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
 				chatCell.MarkAsRead ();
 				tableCellGroup.Cells.Add (chatCell);
-			}
+			}*/
 
-			source = new CustomCellTableSource(cellGroups);
-			source.RowSelectedAction = RowSelected;
-
-			table.Source = source;
-
+			
 		}
 
 

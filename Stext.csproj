@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -85,6 +85,9 @@
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
     <Reference Include="MonoTouch.Dialog-1" />
+    <Reference Include="Xamarin.Mobile">
+      <HintPath>Components\xamarin.mobile-0.7.1\lib\ios\Xamarin.Mobile.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\Default-568h%402x.png" />
@@ -237,24 +240,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
   <ItemGroup>
-    <Folder Include="Images\" />
-    <Folder Include="Views\" />
-    <Folder Include="Util\" />
-    <Folder Include="Images\Icons\" />
-    <Folder Include="Views\Chat\" />
-    <Folder Include="Table\" />
-    <Folder Include="Table\Cells\" />
-    <Folder Include="Images\Chat\" />
-    <Folder Include="Images\scm\" />
-    <Folder Include="Views\Contact\" />
-    <Folder Include="Table\Cells\Contact\" />
-    <Folder Include="Images\Contact\" />
-    <Folder Include="Views\Group\" />
-    <Folder Include="Table\Cells\Group\" />
-    <Folder Include="Views\Key\" />
-    <Folder Include="Table\Cells\Key\" />
-    <Folder Include="Views\Settings\" />
-    <Folder Include="Table\Cells\Settings\" />
+    <XamarinComponentReference Include="xamarin.mobile">
+      <Visible>False</Visible>
+      <Version>0.7.1</Version>
+    </XamarinComponentReference>
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Views\RegistrationView.xib" />
@@ -279,5 +268,15 @@
   <ItemGroup>
     <ITunesArtwork Include="iTunesArtwork" />
     <ITunesArtwork Include="iTunesArtwork%402x" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom-Messageing-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj">
+      <Project>{70bf2276-52dd-4427-b96b-8a4fde745015}</Project>
+      <Name>Securecom.Messaging.Spec</Name>
+    </ProjectReference>
+    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\Securecom.Messaging.Net.csproj">
+      <Project>{2cc5830d-f86d-49a8-84f3-2e575ecb203a}</Project>
+      <Name>Securecom.Messaging.Net</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
