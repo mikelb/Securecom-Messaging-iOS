@@ -38,7 +38,9 @@ namespace Stext
         }
 
         private NSDictionary userSelectedNotification = null;
-
+        
+        public static readonly string PushServerUrl =  "https://stext1.ftlnetworks.com:4443";
+        
         public override void FinishedLaunching(UIApplication application)
         {
             Window = new UIWindow(UIScreen.MainScreen.Bounds);

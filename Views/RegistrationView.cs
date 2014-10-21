@@ -6,6 +6,16 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using System.Collections.Generic;
 
+using Securecom.Messaging;
+using Securecom.Messaging.Utils;
+using Securecom.Messaging.Spec;
+using Securecom.Messaging.Net;
+using Securecom.Messaging.Entities;
+
+using System.Security.Cryptography.X509Certificates;
+using System.Security;
+using System.IO;
+
 namespace Stext{
 
 	public partial class RegistrationView : UIViewController{
@@ -107,6 +117,32 @@ namespace Stext{
 				this.processingView.Hidden = true;
 				this.PhPhoneNumberInput.BecomeFirstResponder();
 			};
+
+         this.PhPhoneNumberInput.ShouldReturn += (textField) => { 
+            textField.ResignFirstResponder ();
+            return true;
+         };
+
+         this.Continue.TouchUpInside += (sender, e) => 
+         {
+            String phoneNumber = PhPhoneNumberInput.Text;
+
+
+            FileStorage fs = new FileStorage ();
+            STextConfig.Storage = fs;
+
+            STextConfig cfg = STextConfig.GetInstance ();
+
+            cfg.MobileNumber = phoneNumber;
+            cfg.Password = "3sApmcX4px5tp2b9dPH46lMI";
+            cfg.ServerUrl = "https://stext1.ftlnetworks.com:4443";
+
+            cfg.SaveConfig ();
+
+            X509Certificate certificate = new X509Certificate("signing-ca-1.crt");
+            MessageManager manager = new MessageManager(new Uri(Stext.AppDelegate.PushServerUrl), phoneNumber, null, certificate);
+            manager.CreateAccount(false);
+         };
 		}	
 
 	}
