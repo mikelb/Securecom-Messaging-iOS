@@ -3,6 +3,17 @@
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 
+
+using Securecom.Messaging;
+using Securecom.Messaging.Utils;
+using Securecom.Messaging.Spec;
+using Securecom.Messaging.Net;
+using Securecom.Messaging.Entities;
+
+using System.Security.Cryptography.X509Certificates;
+using System.Security;
+using System.IO;
+
 namespace Stext
 {
 
@@ -30,6 +41,28 @@ namespace Stext
         public SettingsView settingsView;
         #endregion
 
+      public void CreateMessageManager(String phoneNumber)
+      {
+         FileStorage fs = new FileStorage ();
+         STextConfig.Storage = fs;
+
+         STextConfig cfg = STextConfig.GetInstance ();
+
+         cfg.MobileNumber = phoneNumber;
+         cfg.Password = "3sApmcX4px5tp2b9dPH46lMI";
+         cfg.ServerUrl = "https://stext1.ftlnetworks.com:4443";
+
+         cfg.SaveConfig ();
+
+         X509Certificate certificate = new X509Certificate("signing-ca-1.crt");
+         _manager = new MessageManager(new Uri(Stext.AppDelegate.PushServerUrl), phoneNumber, null, certificate);
+      }
+      private MessageManager _manager;
+
+      public MessageManager MessageManager
+      {
+         get{ return _manager; }
+      }
 
         public override UIWindow Window
         {

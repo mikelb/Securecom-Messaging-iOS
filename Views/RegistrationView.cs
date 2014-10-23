@@ -127,21 +127,9 @@ namespace Stext{
          {
             String phoneNumber = PhPhoneNumberInput.Text;
 
+            appDelegate.CreateMessageManager(phoneNumber);
 
-            FileStorage fs = new FileStorage ();
-            STextConfig.Storage = fs;
-
-            STextConfig cfg = STextConfig.GetInstance ();
-
-            cfg.MobileNumber = phoneNumber;
-            cfg.Password = "3sApmcX4px5tp2b9dPH46lMI";
-            cfg.ServerUrl = "https://stext1.ftlnetworks.com:4443";
-
-            cfg.SaveConfig ();
-
-            X509Certificate certificate = new X509Certificate("signing-ca-1.crt");
-            MessageManager manager = new MessageManager(new Uri(Stext.AppDelegate.PushServerUrl), phoneNumber, null, certificate);
-            manager.CreateAccount(false);
+            //appDelegate.MessageManager.CreateAccount(false);
          };
 		}	
 

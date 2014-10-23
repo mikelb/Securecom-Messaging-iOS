@@ -6,6 +6,16 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using System.Threading;
 
+using Securecom.Messaging;
+using Securecom.Messaging.Utils;
+using Securecom.Messaging.Spec;
+using Securecom.Messaging.Net;
+using Securecom.Messaging.Entities;
+
+using System.Security.Cryptography.X509Certificates;
+using System.Security;
+using System.IO;
+
 namespace Stext{
 
 	public partial class ConfirmationView : UIViewController{
@@ -116,6 +126,7 @@ namespace Stext{
 
 			done.TouchUpInside += (sender, e) => {
 				ShowProcessingView();
+
 				StartProcessing();
 			};
 
@@ -125,10 +136,27 @@ namespace Stext{
 		private void StartProcessing(){
 
 			SetCurrentState(STATE_CONNECTING);
+         String verificationCode = confCodeInput.Text;
 
 			InvokeInBackground (delegate {
+            MessageManager manager = appDelegate.MessageManager;
 				while(STATE != STATE_GO_TO_CHATVIEW){
-					Thread.Sleep(NAP_TIME);
+
+               if (STATE == STATE_CONNECTING)
+               {
+                  Thread.Sleep(NAP_TIME);
+               } else if (STATE == STATE_SMS_VERIFICATION)
+               {
+
+                  KeyGenerator kg = new KeyGenerator();
+                  String signalingKey = kg.GenerateSignalingKey();
+                  int registrationId = kg.GenerateRegistrationID();
+
+                  //manager.VerifyAccount(verificationCode, signalingKey, true, registrationId);
+
+               } else
+					   Thread.Sleep(NAP_TIME);
+
 					STATE++;
 					InvokeOnMainThread(delegate {
 						SetCurrentState(STATE);
