@@ -152,8 +152,25 @@ namespace Stext{
                   String signalingKey = kg.GenerateSignalingKey();
                   int registrationId = kg.GenerateRegistrationID();
 
-                  //manager.VerifyAccount(verificationCode, signalingKey, true, registrationId);
+                  manager.VerifyAccount(verificationCode, signalingKey, true, registrationId);
 
+               }
+               else if (STATE == STATE_GENERATING_KEYS)
+               {
+                  MasterSecretUtil masterSecretUtil = new MasterSecretUtil();
+                  MasterSecret masterSecret = masterSecretUtil.GenerateMasterSecret("the passphase"); //TODO: make this into a user input
+                  //TODO: also need to generate asymmetricMasterSecrect as in the Java implementation.
+                  IdentityKeyUtil identityKeyUtil = new IdentityKeyUtil();
+                  identityKeyUtil.GenerateIdentityKeys(masterSecret);
+
+               }
+               else if (STATE == STATE_REGISTERING_WITH_SERVER)
+               {
+                  //set up for push notification
+                  manager.RegisterApnId(appDelegate.DeviceToken);
+
+                  ApplicationPreferences preference = new ApplicationPreferences();
+                  preference.LocalNumber = this.appDelegate.registrationView.PhPhoneNumberInput.Text;
                } else
 					   Thread.Sleep(NAP_TIME);
 

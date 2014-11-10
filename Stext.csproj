@@ -252,12 +252,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
   <ItemGroup>
-    <XamarinComponentReference Include="xamarin.mobile">
-      <Visible>False</Visible>
-      <Version>0.7.1</Version>
-    </XamarinComponentReference>
-  </ItemGroup>
-  <ItemGroup>
     <InterfaceDefinition Include="Views\RegistrationView.xib" />
     <InterfaceDefinition Include="Views\VerificationView.xib" />
     <InterfaceDefinition Include="Views\ConfirmationView.xib" />
@@ -290,5 +284,11 @@
       <Project>{2cc5830d-f86d-49a8-84f3-2e575ecb203a}</Project>
       <Name>Securecom.Messaging.Net</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <XamarinComponentReference Include="xamarin.mobile">
+      <Visible>False</Visible>
+      <Version>0.7.4</Version>
+    </XamarinComponentReference>
   </ItemGroup>
 </Project>

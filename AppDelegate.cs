@@ -50,7 +50,7 @@ namespace Stext
 
          cfg.MobileNumber = phoneNumber;
          cfg.Password = "3sApmcX4px5tp2b9dPH46lMI";
-         cfg.ServerUrl = "https://stext1.ftlnetworks.com:4443";
+         cfg.ServerUrl = PushServerUrl;
 
          cfg.SaveConfig ();
 
@@ -103,13 +103,14 @@ namespace Stext
 
         private UIViewController GetLaunchView()
         {
+           ApplicationPreferences preferences = new ApplicationPreferences();
+           if (preferences.LocalNumber == null)
             return registrationView;
-            //return  chatView;
+           return chatListView;
+           //return  chatView;
         }
 
-
-
-        public void GoToView(UIViewController view)
+       public void GoToView(UIViewController view)
         {
 
             try
@@ -183,14 +184,16 @@ namespace Stext
 
         public override void RegisteredForRemoteNotifications(UIApplication application, NSData deviceToken)
         {
-            String dt = new NSString(MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr_IntPtr(
+            DeviceToken = new NSString(MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr_IntPtr(
                new MonoTouch.ObjCRuntime.Class("NSString").Handle,
                new MonoTouch.ObjCRuntime.Selector("stringWithFormat:").Handle,
                new NSString("%@").Handle,
                deviceToken.Handle)).ToString();
 
-            Console.WriteLine("RegisteredForRemoteNotifications where deviceToken=" + dt);
+            Console.WriteLine("RegisteredForRemoteNotifications where deviceToken=" + DeviceToken);
         }
+
+        public String DeviceToken;
 
         /// <Docs>Reference to the UIApplication that invoked this delegate method.</Docs>
         /// <summary>

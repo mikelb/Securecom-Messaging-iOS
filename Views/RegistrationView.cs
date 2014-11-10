@@ -129,7 +129,7 @@ namespace Stext{
 
             appDelegate.CreateMessageManager(phoneNumber);
 
-            //appDelegate.MessageManager.CreateAccount(false);
+            appDelegate.MessageManager.CreateAccount(false);
          };
 		}	
 
