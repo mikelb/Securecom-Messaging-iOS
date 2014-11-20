@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 
@@ -101,13 +101,17 @@ namespace Stext
 
         public void SetNavigationProperties() { }
 
+
         private UIViewController GetLaunchView()
         {
+
+           return registrationView;
+           /*
            ApplicationPreferences preferences = new ApplicationPreferences();
            if (preferences.LocalNumber == null)
             return registrationView;
            return chatListView;
-           //return  chatView;
+           return  chatView;*/
         }
 
        public void GoToView(UIViewController view)
@@ -224,13 +228,18 @@ namespace Stext
             }
 
             NSDictionary aps = options.ObjectForKey(new NSString("aps")) as NSDictionary;
-            NSDictionary data = options.ObjectForKey(new NSString("data")) as NSDictionary;
-            String alert = (aps[new NSString("alert")] as NSString).ToString();
-
-            if (data.ContainsKey(new NSString("message")))
+            
+           
+            //String alert = (aps[new NSString("alert")] as NSString).ToString();
+            //String payload = (aps[new NSString("m")] as NSString).ToString();
+            if (options.ContainsKey(new NSString("m")))
             {
+               NSString m = options.ObjectForKey(new NSString("m")) as NSString;
                 try //do something with the message
                 {
+                   String payload = m.ToString();
+                   UIAlertView alert = new UIAlertView("New message", payload, null, "Ok");
+                   alert.Show();
                 }
                 catch (Exception e)
                 {
@@ -238,7 +247,6 @@ namespace Stext
             }
             else
             {
-
                 switch (state)
                 {
                     case UIApplicationState.Background:

@@ -147,30 +147,41 @@ namespace Stext{
                   Thread.Sleep(NAP_TIME);
                } else if (STATE == STATE_SMS_VERIFICATION)
                {
+#if !SKIP_REGISTRATION
 
                   KeyGenerator kg = new KeyGenerator();
                   String signalingKey = kg.GenerateSignalingKey();
                   int registrationId = kg.GenerateRegistrationID();
 
                   manager.VerifyAccount(verificationCode, signalingKey, true, registrationId);
-
+#endif                  
                }
                else if (STATE == STATE_GENERATING_KEYS)
                {
-                  MasterSecretUtil masterSecretUtil = new MasterSecretUtil();
-                  MasterSecret masterSecret = masterSecretUtil.GenerateMasterSecret("the passphase"); //TODO: make this into a user input
+                  //MasterSecretUtil masterSecretUtil = new MasterSecretUtil();
+                  //MasterSecret masterSecret = masterSecretUtil.GenerateMasterSecret("the passphase"); //TODO: make this into a user input
                   //TODO: also need to generate asymmetricMasterSecrect as in the Java implementation.
-                  IdentityKeyUtil identityKeyUtil = new IdentityKeyUtil();
-                  identityKeyUtil.GenerateIdentityKeys(masterSecret);
-
+                  //IdentityKeyUtil identityKeyUtil = new IdentityKeyUtil();
+                  //identityKeyUtil.GenerateIdentityKeys(masterSecret);
+#if !SKIP_REGISTRATION
+                  STextConfig st = STextConfig.GetInstance();
+                  manager.RegisterPreKeys(st.IdentityKey, st.LastResortKey, st.Keys);
+#endif
                }
                else if (STATE == STATE_REGISTERING_WITH_SERVER)
                {
                   //set up for push notification
-                  manager.RegisterApnId(appDelegate.DeviceToken);
+                  String dt = appDelegate.DeviceToken;
+                  dt = dt.Replace("<", String.Empty).Replace(">", String.Empty).Replace(" ", String.Empty);
+                  manager.RegisterApnId(dt);
 
-                  ApplicationPreferences preference = new ApplicationPreferences();
-                  preference.LocalNumber = this.appDelegate.registrationView.PhPhoneNumberInput.Text;
+#if !SKIP_REGISTRATION
+                  InvokeOnMainThread(delegate
+                  {
+                     ApplicationPreferences preference = new ApplicationPreferences();
+                     preference.LocalNumber = this.appDelegate.registrationView.PhPhoneNumberInput.Text;
+                  });
+#endif
                } else
 					   Thread.Sleep(NAP_TIME);
 

@@ -125,11 +125,13 @@ namespace Stext{
 
          this.Continue.TouchUpInside += (sender, e) => 
          {
+#if !SKIP_REGISTRATION
             String phoneNumber = PhPhoneNumberInput.Text;
 
             appDelegate.CreateMessageManager(phoneNumber);
 
             appDelegate.MessageManager.CreateAccount(false);
+#endif
          };
 		}	
 
