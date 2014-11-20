@@ -213,6 +213,47 @@ namespace Stext
             }
         }
 
+
+		public void GregTest (String msg )
+		{
+			STextConfig cfg = STextConfig.GetInstance ();
+
+			byte[] dec = Convert.FromBase64String (msg);
+
+			byte[] dmsg = new byte[dec.Length-17-10];
+			Array.Copy (dec, 17, dmsg,0, dec.Length-17-10);
+
+			MemoryStream ms = new MemoryStream (dmsg);
+
+			textsecure.IncomingPushMessageSignal ips = ProtoBuf.Serializer.Deserialize<textsecure.IncomingPushMessageSignal> (ms);
+
+//			Securecom.Messaging.Net.PreKeyWhisperMessageBaseImpl pmu = new PreKeyWhisperMessageBaseImpl ();
+//			pmu.FromSerialize (dmsg);
+
+			RecipientDevice rp = new RecipientDevice(8457,1);
+
+
+			KeyExchangeProcessorV2 kep = new KeyExchangeProcessorV2 ();
+			kep.MasterSecret = cfg.MasterSecret;
+
+
+			kep.SessionRecord = new SessionRecordV2 (cfg.MasterSecret, rp);
+			//kep.SessionRecord.LoadData ();
+
+			kep.RecipientDevice = rp;
+
+
+			//RatchetingSession rs = new RatchetingSession ();
+			//rs.InitializeSession (kep.SessionRecord.SessionState, prekey.KeyPair, message.BaseKey, prekey.KeyPair, message.WhisperMessage.SenderEphemeral, iku.GetIdentityKeyPair (MasterSecret), message.IdentityKey);
+
+
+
+
+
+		}
+
+
+
         /// <summary>
         /// Processes the notification.
         /// </summary>
@@ -238,6 +279,9 @@ namespace Stext
                 try //do something with the message
                 {
                    String payload = m.ToString();
+
+					GregTest ( payload);
+
                    UIAlertView alert = new UIAlertView("New message", payload, null, "Ok");
                    alert.Show();
                 }
