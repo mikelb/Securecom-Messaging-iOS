@@ -9,6 +9,16 @@ using Securecom.Messaging.Utils;
 using Securecom.Messaging.Spec;
 using Securecom.Messaging.Net;
 using Securecom.Messaging.Entities;
+using Securecom.Messaging.Utils;
+
+using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Asn1.Pkcs;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Digests;
+using Org.BouncyCastle.Crypto.Generators;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Security;
+using Org.BouncyCastle.Utilities.Encoders;
 
 using System.Security.Cryptography.X509Certificates;
 using System.Security;
@@ -217,38 +227,73 @@ namespace Stext
 		public void GregTest (String msg )
 		{
 			STextConfig cfg = STextConfig.GetInstance ();
+			MasterCipher mc = new MasterCipher (cfg.MasterSecret);
+			byte[] sigkey = Convert.FromBase64String (cfg.AccountAttributes.SignalingKey);
 
 			byte[] dec = Convert.FromBase64String (msg);
 
-			byte[] dmsg = new byte[dec.Length-17-10];
-			Array.Copy (dec, 17, dmsg,0, dec.Length-17-10);
+			byte[] mac = new byte[20];
 
-			MemoryStream ms = new MemoryStream (dmsg);
+			Array.Copy (sigkey, sigkey.Length - 20, mac, 0, 20);
+
+	//		byte[] body = mc.VerifyMacBody (mac, dec);
+
+
+			byte[] dmsg = new byte[dec.Length-1-10];
+			Array.Copy (dec, 1, dmsg,0, dec.Length-1-10);
+
+
+			
+			byte[] realsigkey = new byte[32];
+
+			Array.Copy (sigkey, 0, realsigkey,0,  32);
+
+			byte[] decoded = mc.GetDecryptedBody (realsigkey, dmsg);
+
+			MemoryStream ms = new MemoryStream (decoded);
 
 			textsecure.IncomingPushMessageSignal ips = ProtoBuf.Serializer.Deserialize<textsecure.IncomingPushMessageSignal> (ms);
 
-//			Securecom.Messaging.Net.PreKeyWhisperMessageBaseImpl pmu = new PreKeyWhisperMessageBaseImpl ();
-//			pmu.FromSerialize (dmsg);
+			Securecom.Messaging.Net.PreKeyWhisperMessageBaseImpl pmu = new PreKeyWhisperMessageBaseImpl ();
+			pmu.FromSerialize (ips.message);
 
-			RecipientDevice rp = new RecipientDevice(8457,1);
+			RecipientDevice rp = new RecipientDevice(pmu.RegistrationId,-1);
 
 
 			KeyExchangeProcessorV2 kep = new KeyExchangeProcessorV2 ();
 			kep.MasterSecret = cfg.MasterSecret;
 
 
-			kep.SessionRecord = new SessionRecordV2 (cfg.MasterSecret, rp);
+			SessionRecordV2 srv = new SessionRecordV2 (cfg.MasterSecret, rp);
+			srv.SessionState = new textsecure.SessionStructure ();
+
 			//kep.SessionRecord.LoadData ();
 
-			kep.RecipientDevice = rp;
+			//kep.RecipientDevice = rp;
+
+			IPreKeyRecord pkr = cfg.GetPreKey (pmu.PreKeyId);
+
+			IdentityKeyUtil iku = new IdentityKeyUtil ();
+
+			RatchetingSession rs = new RatchetingSession ();
+
+			rs.InitializeSession (srv.SessionState, pkr.KeyPair, pmu.BaseKey, pkr.KeyPair, pmu.WhisperMessage.SenderEphemeral, iku.GetIdentityKeyPair (cfg.MasterSecret), pmu.IdentityKey);
+
+			byte[] key = srv.SessionState.senderChain.chainKey.key;
+
+			KeyGenerator kg = new KeyGenerator ();
+			MessageKeys mk = new MessageKeys ();
+
+			mk.CipherKey = key;
+
+			IBufferedCipher ciph = kg.GetAESWithCRT (mk, false);
 
 
-			//RatchetingSession rs = new RatchetingSession ();
-			//rs.InitializeSession (kep.SessionRecord.SessionState, prekey.KeyPair, message.BaseKey, prekey.KeyPair, message.WhisperMessage.SenderEphemeral, iku.GetIdentityKeyPair (MasterSecret), message.IdentityKey);
+			byte[] thefinalmessage = ciph.DoFinal (pmu.WhisperMessage.CipherText);
 
-
-
-
+			String message = Utils.FromBytes (thefinalmessage);
+			UIAlertView alert = new UIAlertView("New message", message, null, "Ok");
+			alert.Show();
 
 		}
 

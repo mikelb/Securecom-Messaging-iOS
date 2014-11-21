@@ -149,10 +149,15 @@ namespace Stext{
                {
 #if !SKIP_REGISTRATION
 
-                  KeyGenerator kg = new KeyGenerator();
+						STextConfig cfg = STextConfig.GetInstance();
+				
+						String signalingKey = cfg.AccountAttributes.SignalingKey;
+						int registrationId = cfg.AccountAttributes.RegistrationId;
+				  
+/*                  KeyGenerator kg = new KeyGenerator();
                   String signalingKey = kg.GenerateSignalingKey();
                   int registrationId = kg.GenerateRegistrationID();
-
+*/
                   manager.VerifyAccount(verificationCode, signalingKey, true, registrationId);
 #endif                  
                }

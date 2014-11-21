@@ -97,6 +97,9 @@
     <Reference Include="protobuf-net">
       <HintPath>Securecom-Messaging-CSharp\Securecom-Messageing-Spec\3rdParty\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="BouncyCastle.Crypto">
+      <HintPath>Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\3rdParty\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\Default-568h%402x.png" />
