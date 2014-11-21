@@ -280,6 +280,7 @@ namespace Stext
 			rs.InitializeSession (srv.SessionState, pkr.KeyPair, pmu.BaseKey, pkr.KeyPair, pmu.WhisperMessage.SenderEphemeral, iku.GetIdentityKeyPair (cfg.MasterSecret), pmu.IdentityKey);
 
 			byte[] key = srv.SessionState.senderChain.chainKey.key;
+//			byte[] key = srv.SessionState.rootKey;
 
 			KeyGenerator kg = new KeyGenerator ();
 			MessageKeys mk = new MessageKeys ();
@@ -288,8 +289,22 @@ namespace Stext
 
 			IBufferedCipher ciph = kg.GetAESWithCRT (mk, false);
 
+			byte[] sdata = pmu.WhisperMessage.Serialize ();
 
-			byte[] thefinalmessage = ciph.DoFinal (pmu.WhisperMessage.CipherText);
+			String b64data = Convert.ToBase64String (pmu.WhisperMessage.CipherText);
+
+
+			SessionCipher sc = new SessionCipher ();
+			sc.MasterSecret = cfg.MasterSecret;
+			sc.Recipient = rp;
+
+			byte[] finalhope = sc.Decrypt (srv.SessionState, sdata);
+
+
+			byte[] thefinalmessage = ciph.DoFinal (sdata);
+
+
+
 
 			String message = Utils.FromBytes (thefinalmessage);
 			UIAlertView alert = new UIAlertView("New message", message, null, "Ok");
