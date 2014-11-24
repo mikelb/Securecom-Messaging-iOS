@@ -285,7 +285,9 @@ namespace Stext
 			KeyGenerator kg = new KeyGenerator ();
 			MessageKeys mk = new MessageKeys ();
 
-			mk.CipherKey = key;
+			mk.CipherKey = srv.SessionState.rootKey;
+			//mk.Counter = (int)srv.SessionState.senderChain.chainKey.index;
+			mk.Counter = 1;
 
 			IBufferedCipher ciph = kg.GetAESWithCRT (mk, false);
 
@@ -342,8 +344,8 @@ namespace Stext
 
 					GregTest ( payload);
 
-                   UIAlertView alert = new UIAlertView("New message", payload, null, "Ok");
-                   alert.Show();
+                   //UIAlertView alert = new UIAlertView("New message", payload, null, "Ok");
+                   //alert.Show();
                 }
                 catch (Exception e)
                 {
