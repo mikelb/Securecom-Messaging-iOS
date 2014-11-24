@@ -298,10 +298,10 @@ namespace Stext
 			sc.MasterSecret = cfg.MasterSecret;
 			sc.Recipient = rp;
 
-			byte[] finalhope = sc.Decrypt (srv.SessionState, sdata);
+			//byte[] finalhope = sc.Decrypt (srv.SessionState, sdata);
 
 
-			byte[] thefinalmessage = ciph.DoFinal (sdata);
+			byte[] thefinalmessage = ciph.DoFinal (pmu.WhisperMessage.CipherText);
 
 
 
