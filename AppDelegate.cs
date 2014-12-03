@@ -23,6 +23,8 @@ using Org.BouncyCastle.Utilities.Encoders;
 using System.Security.Cryptography.X509Certificates;
 using System.Security;
 using System.IO;
+using System.Security.AccessControl;
+using System.Security.Cryptography;
 
 namespace Stext
 {
@@ -224,6 +226,91 @@ namespace Stext
         }
 
 
+		public  String RatchetBobLiveTest ( Securecom.Messaging.Spec.IECPublicKey ourEphemPub, Securecom.Messaging.Spec.IECPrivateKey ourEphemPriv, Securecom.Messaging.Spec.IECPublicKey theirBaseKey, Securecom.Messaging.Spec.IECPublicKey theirEphemPub,
+			Securecom.Messaging.Spec.IECPublicKey ourIdPub, Securecom.Messaging.Spec.IECPrivateKey ourIdPrivate, Securecom.Messaging.Spec.IECPublicKey theirId, String emsg )
+		{
+
+			//AccountTests.SetupConfig ();
+			STextConfig cfg = STextConfig.GetInstance ();
+
+
+			RecipientDevice rp = new RecipientDevice(13964,-1);
+
+
+			SessionRecordV2 srv = new SessionRecordV2 (cfg.MasterSecret, rp);
+			srv.SessionState = new textsecure.SessionStructure ();
+
+			IdentityKeyUtil iku = new IdentityKeyUtil ();
+
+
+			ECKeyPair ourPair = new ECKeyPair ();
+			ourPair.PrivateKey = ourEphemPriv;
+			ourPair.PublicKey = ourEphemPub;
+
+			IdentityKeyPair kp = new IdentityKeyPair ();
+			kp.PrivateKey = ourIdPrivate;
+			IdentityKey ik = new IdentityKey ();
+			ik.PublicKey = ourIdPub;
+			kp.PublicKey = ik;
+
+
+			IdentityKey tik = new IdentityKey ();
+			tik.PublicKey = theirId;
+
+			RatchetingSession rs = new RatchetingSession ();
+
+			rs.InitializeSession (srv.SessionState, ourPair, theirBaseKey, ourPair, theirEphemPub, kp, tik);
+
+			System.Console.WriteLine ("CIpher Key = [" + Convert.ToBase64String (srv.SessionState.senderChain.messageKeys [0].cipherKey) +"]");
+			System.Console.WriteLine ("MAC Key = [" + Convert.ToBase64String (srv.SessionState.senderChain.messageKeys [0].macKey) +"]");
+
+
+			ChainKey mck = new ChainKey ();
+
+			mck.Index = 0;
+			mck.Key = theirEphemPub.GetPublicKey();
+
+
+			// new sender chain
+			RootKey rk = new RootKey ();
+			//rk.Key = rootk.GetPublicKey ();
+
+			// TODO: OK ?
+			rk.Key = srv.SessionState.rootKey;
+
+			Tuple<IRootKey, IChainKey> senderTuple = rk.CreateChain (theirEphemPub, ourPair);
+			IChainKey newSenderChain = senderTuple.Item2;
+			IRootKey newSenderRoot = senderTuple.Item1;
+
+			System.Console.WriteLine ("new Rook Key -" + Convert.ToBase64String (newSenderRoot.Key));
+			Securecom.Messaging.ecc.PublicKey shouldbekey = new Securecom.Messaging.ecc.PublicKey (Convert.FromBase64String ("PHuMFzEbhDA3sdMq6Bp0WXvwvVJtR2tL+aFzxHs2wtY="), CurveConst.DjbType);
+
+			mck.Key = newSenderChain.Key;
+
+			System.Console.WriteLine ("NEW SEnder Chain key key: " + Convert.ToBase64String (newSenderChain.Key));
+
+
+			byte[] shouldbechainkey = (new Securecom.Messaging.ecc.PublicKey (Convert.FromBase64String ("vQouBvdRn/2+AhtnwRSfXa2U3AgOQspIknnrKAALHnU="), CurveConst.DjbType)).GetPublicKey();
+
+			MessageKeys mk = mck.MessageKeys;
+
+			System.Console.WriteLine ("CIPHER: " + Convert.ToBase64String (mk.CipherKey));
+
+			KeyGenerator kg = new KeyGenerator ();
+
+			IBufferedCipher ciph = kg.GetAESWithCRT (mk, false);
+
+			byte[] sdata = Convert.FromBase64String ("kbXz7w==");
+			byte[] thefinalmessage = ciph.DoFinal (Convert.FromBase64String ( emsg));
+
+			String message = Utils.FromBytes (thefinalmessage);
+
+
+			System.Console.WriteLine ("MESSAGE: " + message);
+			return ( message );
+		}
+
+
 		public void GregTest (String msg )
 		{
 			STextConfig cfg = STextConfig.GetInstance ();
@@ -277,41 +364,36 @@ namespace Stext
 
 			RatchetingSession rs = new RatchetingSession ();
 
-			rs.InitializeSession (srv.SessionState, pkr.KeyPair, pmu.BaseKey, pkr.KeyPair, pmu.WhisperMessage.SenderEphemeral, iku.GetIdentityKeyPair (cfg.MasterSecret), pmu.IdentityKey);
-
-			byte[] key = srv.SessionState.senderChain.chainKey.key;
-//			byte[] key = srv.SessionState.rootKey;
-
-			KeyGenerator kg = new KeyGenerator ();
-			MessageKeys mk = new MessageKeys ();
-
-			mk.CipherKey = srv.SessionState.rootKey;
-			//mk.Counter = (int)srv.SessionState.senderChain.chainKey.index;
-			mk.Counter = 1;
-
-			IBufferedCipher ciph = kg.GetAESWithCRT (mk, false);
-
-			byte[] sdata = pmu.WhisperMessage.Serialize ();
-
-			String b64data = Convert.ToBase64String (pmu.WhisperMessage.CipherText);
+			System.Console.WriteLine ("<==================>");
+			System.Console.WriteLine ("Our Ephem - " + Convert.ToBase64String(pkr.KeyPair.PublicKey.Serialize));
+			System.Console.WriteLine ("Our Prv Ephem - " + Convert.ToBase64String(pkr.KeyPair.PrivateKey.Serialize));
 
 
-			SessionCipher sc = new SessionCipher ();
-			sc.MasterSecret = cfg.MasterSecret;
-			sc.Recipient = rp;
+			System.Console.WriteLine ("Their Base - " + Convert.ToBase64String(pmu.BaseKey.Serialize));
+			System.Console.WriteLine ("Sender Ephem - " + Convert.ToBase64String(pmu.WhisperMessage.SenderEphemeral.Serialize));
 
-			//byte[] finalhope = sc.Decrypt (srv.SessionState, sdata);
+			System.Console.WriteLine ("My IK- " + Convert.ToBase64String(iku.GetIdentityKeyPair (cfg.MasterSecret).PublicKey.PublicKey.Serialize));
+			System.Console.WriteLine ("My ID Priv  - " + Convert.ToBase64String(iku.GetIdentityKeyPair (cfg.MasterSecret).PrivateKey.Serialize));
+			System.Console.WriteLine ("Their IK - " + Convert.ToBase64String(pmu.IdentityKey.PublicKey.Serialize));
+
+			System.Console.WriteLine ("MSG: " + Convert.ToBase64String (pmu.WhisperMessage.CipherText));
+			System.Console.WriteLine ("<==================>");
 
 
-			byte[] thefinalmessage = ciph.DoFinal (pmu.WhisperMessage.CipherText);
+			String result = RatchetBobLiveTest (pkr.KeyPair.PublicKey, 
+												pkr.KeyPair.PrivateKey, pmu.BaseKey, pmu.WhisperMessage.SenderEphemeral, iku.GetIdentityKeyPair (cfg.MasterSecret).PublicKey.PublicKey, 
+				iku.GetIdentityKeyPair (cfg.MasterSecret).PrivateKey, pmu.IdentityKey.PublicKey, Convert.ToBase64String(pmu.WhisperMessage.CipherText));
 
 
-
-
-			String message = Utils.FromBytes (thefinalmessage);
-			UIAlertView alert = new UIAlertView("New message", message, null, "Ok");
+			UIAlertView alert = new UIAlertView("New Whisper Message: ", result, null, "Ok");
 			alert.Show();
 
+
+			return;
+
+
+
+	
 		}
 
 

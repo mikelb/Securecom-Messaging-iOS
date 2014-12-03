@@ -282,13 +282,13 @@
     <ITunesArtwork Include="iTunesArtwork%402x" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom-Messageing-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj">
-      <Project>{70BF2276-52DD-4427-B96B-8A4FDE745015}</Project>
-      <Name>Securecom.Messaging.Spec</Name>
-    </ProjectReference>
-    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\Securecom.Messaging.Net.csproj">
+    <ProjectReference Include="..\Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\Securecom.Messaging.Net.csproj">
       <Project>{2CC5830D-F86D-49A8-84F3-2E575ECB203A}</Project>
       <Name>Securecom.Messaging.Net</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Securecom-Messaging-CSharp\Securecom-Messageing-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj">
+      <Project>{70BF2276-52DD-4427-B96B-8A4FDE745015}</Project>
+      <Name>Securecom.Messaging.Spec</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
