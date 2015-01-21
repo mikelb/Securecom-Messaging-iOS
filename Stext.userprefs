@@ -1,45 +1,40 @@
-﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneSimulatorTarget.IPhone6.8.1" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="../Securecom-Messaging-CSharp/MessagingTests/Util/MiscEncTests.cs">
+﻿<Properties StartupItem="Stext.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="AppDelegate.cs">
     <Files>
-      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/EncryptionTests.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/Util/MiscEncTests.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/AccountTests.cs" Line="2" Column="2" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/RootKey.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/KDF/HKDF.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/ChainKey.cs" Line="1" Column="1" />
-      <File FileName="AppDelegate.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Crypto/IdentityKeyUtil.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Utils/KeyGenerator.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/SessionCipher.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/MessageManager.cs" Line="53" Column="53" />
-      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/Util/UTFTestUtil.cs" Line="1" Column="1" />
+      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Protocol/PushTransport.cs" Line="1" Column="1" />
+      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Crypto/KeyExchangeMessageV2.cs" Line="1" Column="1" />
+      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Crypto/KeyExchangeProcessorV2.cs" Line="45" Column="45" />
+      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Protocol/CiphertextMessage.cs" Line="1" Column="1" />
+      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Protocol/PreKeyWhisperMessageUtil.cs" Line="1" Column="1" />
       <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Protocol/WhisperMessage.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/Ratchet/RatchetSession.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Protocol/PreKeyWhisperMessageBaseImpl.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/LiveMessageTests.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/RatchetingSession.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/ecc/PublicKey.cs" Line="1" Column="1" />
+      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/storage/Session.cs" Line="1" Column="1" />
+      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/MessageManager.cs" Line="4" Column="4" />
+      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/EncryptionTests.cs" Line="20" Column="20" />
+      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/LiveMessageTests.cs" Line="67" Column="67" />
+      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/RatchetingSession.cs" Line="32" Column="32" />
+      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Protocol/PreKeyWhisperMessageBaseImpl.cs" Line="3" Column="3" />
+      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/MessageManagerUtil.cs" Line="105" Column="105" />
+      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/RootKey.cs" Line="37" Column="37" />
+      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/AccountTests.cs" Line="24" Column="24" />
+      <File FileName="AppDelegate.cs" Line="41" Column="41" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
       <Breakpoint file="/Users/weiss/svn/Projects/Securecom/Stext/iOS/Stext/Util/StextUtil.cs" line="34" column="1" />
-      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-iOS/AppDelegate.cs" line="466" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-iOS/Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/SessionCipher.cs" line="192" column="1" />
-      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-iOS/AppDelegate.cs" line="451" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-iOS/Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/RatchetingSession.cs" line="214" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-iOS/Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/RatchetingSession.cs" line="190" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/EncryptionTests.cs" line="250" column="1" />
       <Breakpoint traceExpression="{agreement}" file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/EncryptionTests.cs" line="264" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/EncryptionTests.cs" line="241" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/EncryptionTests.cs" line="231" column="1" />
-      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Util/MiscEncTests.cs" line="207" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Util/MiscEncTests.cs" line="221" column="1" />
+      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Util/MiscEncTests.cs" line="235" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Ratchet/RatchetSession.cs" line="182" column="55" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/SessionCipher.cs" line="272" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Ratchet/RatchetSession.cs" line="170" column="1" />
-      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-iOS/AppDelegate.cs" line="434" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-iOS/AppDelegate.cs" line="310" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Ratchet/RatchetSession.cs" line="225" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Ratchet/RatchetSession.cs" line="191" column="1" />
@@ -48,9 +43,12 @@
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-iOS/AppDelegate.cs" line="295" column="1" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/RatchetingSession.cs" line="206" column="30" />
       <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/RatchetingSession.cs" line="214" column="1" />
-      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Util/MiscEncTests.cs" line="134" column="1" />
-      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/KDF/HKDF.cs" line="63" column="1" />
-      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Util/MiscEncTests.cs" line="136" column="1" />
+      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Util/MiscEncTests.cs" line="148" column="1" />
+      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/KDF/HKDF.cs" line="70" column="1" />
+      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Util/MiscEncTests.cs" line="150" column="1" />
+      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-iOS/AppDelegate.cs" line="390" column="1" />
+      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/MessagingTests/Util/MiscEncTests.cs" line="129" column="23" />
+      <Breakpoint file="/Users/gregmcgregor/Documents/Projects/Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Crypto/KeyExchangeProcessorV2.cs" line="462" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

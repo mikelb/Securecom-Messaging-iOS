@@ -240,7 +240,7 @@ namespace Stext
 			SessionRecordV2 srv = new SessionRecordV2 (cfg.MasterSecret, rp);
 			srv.SessionState = new textsecure.SessionStructure ();
 
-			IdentityKeyUtil iku = new IdentityKeyUtil ();
+			//IdentityKeyUtil iku = new IdentityKeyUtil ();
 
 
 			ECKeyPair ourPair = new ECKeyPair ();
@@ -344,7 +344,7 @@ namespace Stext
 			Securecom.Messaging.Net.PreKeyWhisperMessageBaseImpl pmu = new PreKeyWhisperMessageBaseImpl ();
 			pmu.FromSerialize (ips.message);
 
-			RecipientDevice rp = new RecipientDevice(pmu.RegistrationId,-1);
+			/* RecipientDevice rp = new RecipientDevice(pmu.RegistrationId,-1);
 
 
 			KeyExchangeProcessorV2 kep = new KeyExchangeProcessorV2 ();
@@ -353,16 +353,14 @@ namespace Stext
 
 			SessionRecordV2 srv = new SessionRecordV2 (cfg.MasterSecret, rp);
 			srv.SessionState = new textsecure.SessionStructure ();
-
-			//kep.SessionRecord.LoadData ();
-
-			//kep.RecipientDevice = rp;
+*/
 
 			IPreKeyRecord pkr = cfg.GetPreKey (pmu.PreKeyId);
 
 			IdentityKeyUtil iku = new IdentityKeyUtil ();
 
 			RatchetingSession rs = new RatchetingSession ();
+
 
 			System.Console.WriteLine ("<==================>");
 			System.Console.WriteLine ("Our Ephem - " + Convert.ToBase64String(pkr.KeyPair.PublicKey.Serialize));
