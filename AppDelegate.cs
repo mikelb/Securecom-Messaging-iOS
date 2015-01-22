@@ -395,6 +395,20 @@ namespace Stext
 		}
 
 
+		public String ProcessIncomingMessage (String msg )
+		{
+			String ret = "";
+
+			MessageManager mm = new MessageManager ();
+
+			byte[] buff = mm.ProcessIncomingMessage (msg);
+
+			ret = Utils.FromBytes (buff);
+
+			return (ret);
+		}
+
+
 
         /// <summary>
         /// Processes the notification.
@@ -422,7 +436,12 @@ namespace Stext
                 {
                    String payload = m.ToString();
 
-					GregTest ( payload);
+					String msg = ProcessIncomingMessage ( payload );
+
+					UIAlertView alert = new UIAlertView("New Whisper Message: ", msg, null, "Ok");
+					alert.Show();
+
+					//GregTest ( payload);
 
                    //UIAlertView alert = new UIAlertView("New message", payload, null, "Ok");
                    //alert.Show();
