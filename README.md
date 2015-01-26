@@ -4,11 +4,15 @@ Currently in early development stage.
 
 ## Building
 
-1) Clone the repo to a working directory and checkout the submodules.
+1) Clone the repo to a working directory.
 
-2) Install Xamarin Studio with iOS plugin.
+2) Checkout the submodules. On commandline, this can be done by issuing the following command in the root folder: git submodule update --init --recursive
 
-3) Open the `Stext.sln` in Xamarin Studio. Build and Run and you are ready to go!
+3) Place the server cerificate in the root folder, rename the file to "signing-ca-1.crt"
+
+4) Install Xamarin Studio with iOS plugin.
+
+5) Open the `Stext.sln` in Xamarin Studio. Build and Run and you are ready to go!
 
 ## Cryptography Notice
 
