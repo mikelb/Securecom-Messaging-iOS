@@ -95,7 +95,10 @@ namespace Stext
 			NavigationItem.TitleView = StextUtil.SetTitleBarImage("Connect with Stext", 35, 65);
 		}
 
-
+		public override void ViewDidLayoutSubviews(){
+			this.PhoneRegisterView.ContentSize = new SizeF(320, 700);
+			this.EmailRegisterView.ContentSize = new SizeF(320, 700);
+		}
 		public override void ViewDidLoad()
 		{
 			this.appDelegate = (AppDelegate)UIApplication.SharedApplication.Delegate;
