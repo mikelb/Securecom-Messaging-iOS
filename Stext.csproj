@@ -49,8 +49,13 @@
     <ConsolePause>false</ConsolePause>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchDebug>true</MtouchDebug>
-    <CodesignKey>iPhone Developer: Greg McGregor (93CPTYP22P)</CodesignKey>
-    <CodesignProvision>1e82bbdc-e45a-4a9d-8915-873f6c8b8777</CodesignProvision>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <MtouchI18n>
+    </MtouchI18n>
+    <MtouchArch>ARMv7</MtouchArch>
+    <IpaPackageName>
+    </IpaPackageName>
+    <CodesignProvision>794ab05f-c7b6-4553-a425-9ea73343caac</CodesignProvision>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>full</DebugType>
@@ -91,14 +96,14 @@
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
     <Reference Include="MonoTouch.Dialog-1" />
-    <Reference Include="Xamarin.Mobile">
-      <HintPath>Components\xamarin.mobile-0.7.1\lib\ios\Xamarin.Mobile.dll</HintPath>
-    </Reference>
     <Reference Include="protobuf-net">
       <HintPath>Securecom-Messaging-CSharp\Securecom-Messageing-Spec\3rdParty\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\3rdParty\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Mobile">
+      <HintPath>Components\xamarin.mobile-0.7.1\lib\ios\Xamarin.Mobile.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -164,6 +169,7 @@
     <None Include="Images\scm\.DS_Store" />
     <None Include="Images\Icons\.DS_Store" />
     <None Include="Images\Contact\.DS_Store" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
@@ -251,6 +257,7 @@
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
+  <Import Project="packages\xamstore-xamarin.mobile.0.7.1\build\monotouch\xamstore-xamarin.mobile.props" Condition="Exists('packages\xamstore-xamarin.mobile.0.7.1\build\monotouch\xamstore-xamarin.mobile.props')" />
   <ItemGroup>
     <XamarinComponentReference Include="xamarin.mobile">
       <Version>0.7.1</Version>
@@ -282,13 +289,26 @@
     <ITunesArtwork Include="iTunesArtwork%402x" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\Securecom.Messaging.Net.csproj">
-      <Project>{2CC5830D-F86D-49A8-84F3-2E575ECB203A}</Project>
-      <Name>Securecom.Messaging.Net</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Securecom-Messaging-CSharp\Securecom-Messageing-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj">
+    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom-Messageing-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj">
       <Project>{70BF2276-52DD-4427-B96B-8A4FDE745015}</Project>
       <Name>Securecom.Messaging.Spec</Name>
     </ProjectReference>
+    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\Securecom.Messaging.Net.csproj">
+      <Project>{2CC5830D-F86D-49A8-84F3-2E575ECB203A}</Project>
+      <Name>Securecom.Messaging.Net</Name>
+    </ProjectReference>
   </ItemGroup>
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <TextStylePolicy FileWidth="120" NoTabsAfterNonTabs="True" EolMarker="Unix" inheritsSet="Mono" inheritsScope="text/plain" scope="text/x-csharp" />
+          <CSharpFormattingPolicy AlignEmbeddedStatements="False" IndentPreprocessorDirectives="False" BeforeMethodDeclarationParentheses="False" BeforeMethodCallParentheses="False" BeforeConstructorDeclarationParentheses="False" NewLineBeforeConstructorInitializerColon="NewLine" NewLineAfterConstructorInitializerColon="SameLine" BeforeDelegateDeclarationParentheses="False" AfterDelegateDeclarationParameterComma="True" NewParentheses="False" SpacesBeforeBrackets="False" inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
+          <TextStylePolicy FileWidth="120" TabsToSpaces="False" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/plain" />
+          <TextStylePolicy inheritsSet="null" scope="application/vnd.apple-interface-builder" />
+          <XmlFormattingPolicy inheritsSet="null" scope="application/vnd.apple-interface-builder" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
 </Project>

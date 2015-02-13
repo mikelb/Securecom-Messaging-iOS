@@ -4,8 +4,6 @@
 <dict>
 	<key>CFBundleDisplayName</key>
 	<string>Stext</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.magellanllc.securecomtest</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
@@ -35,5 +33,7 @@
 		<string>Icon-60@2x.png</string>
 		<string>Icon-Small-40@2x.png</string>
 	</array>
+	<key>CFBundleIdentifier</key>
+	<string>com.securecomcode.messaging</string>
 </dict>
 </plist>
