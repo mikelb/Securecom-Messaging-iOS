@@ -6,8 +6,9 @@ using MonoTouch.UIKit;
 
 using Securecom.Messaging;
 using Securecom.Messaging.Utils;
-using Securecom.Messaging.Spec;
 using Securecom.Messaging.Net;
+using Securecom.Messaging.Spec;
+
 using Securecom.Messaging.Entities;
 using Securecom.Messaging.Utils;
 
@@ -20,11 +21,13 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.Encoders;
 
-using System.Security.Cryptography.X509Certificates;
+//using System.Security.Cryptography.X509Certificates;
 using System.Security;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
+using Securecom.Messaging.ecc;
+using Securecom.Messaging.ecc;
 
 namespace Stext
 {
@@ -58,15 +61,13 @@ namespace Stext
 
 		public void CreateMessageManager(String phoneNumber)
 		{
-			STextConfig cfg = STextConfig.GetInstance();
+			config.MobileNumber = phoneNumber;
+			config.Password = "3sApmcX4px5tp2b9dPH46lMI";
 
-			cfg.MobileNumber = phoneNumber;
-			cfg.Password = "3sApmcX4px5tp2b9dPH46lMI";
+			config.SaveConfig();
 
-			cfg.SaveConfig();
-
-			X509Certificate certificate = new X509Certificate("signing-ca-1.crt");
-			_manager = new MessageManager(new Uri(cfg.ServerUrl), phoneNumber, null, certificate);
+			System.Security.Cryptography.X509Certificates.X509Certificate certificate = new System.Security.Cryptography.X509Certificates.X509Certificate("signing-ca-1.crt");
+			_manager = new MessageManager(new Uri(config.ServerUrl), phoneNumber, null, certificate);
 		}
 
 		private MessageManager _manager;
@@ -193,8 +194,8 @@ namespace Stext
 		}
 
 
-		public  String RatchetBobLiveTest(Securecom.Messaging.Spec.IECPublicKey ourEphemPub, Securecom.Messaging.Spec.IECPrivateKey ourEphemPriv, Securecom.Messaging.Spec.IECPublicKey theirBaseKey, Securecom.Messaging.Spec.IECPublicKey theirEphemPub,
-		                                  Securecom.Messaging.Spec.IECPublicKey ourIdPub, Securecom.Messaging.Spec.IECPrivateKey ourIdPrivate, Securecom.Messaging.Spec.IECPublicKey theirId, String emsg)
+		public  String RatchetBobLiveTest(PublicKey ourEphemPub, PrivateKey ourEphemPriv, PublicKey theirBaseKey, PublicKey theirEphemPub,
+		                                  PublicKey ourIdPub, PrivateKey ourIdPrivate, PublicKey theirId, String emsg)
 		{
 
 			//AccountTests.SetupConfig ();
@@ -210,18 +211,18 @@ namespace Stext
 			//IdentityKeyUtil iku = new IdentityKeyUtil ();
 
 
-			ECKeyPair ourPair = new ECKeyPair();
+			KeyPair ourPair = new KeyPair();
 			ourPair.PrivateKey = ourEphemPriv;
 			ourPair.PublicKey = ourEphemPub;
 
-			IdentityKeyPair kp = new IdentityKeyPair();
+			Securecom.Messaging.Net.IdentityKeyPair kp = new Securecom.Messaging.Net.IdentityKeyPair();
 			kp.PrivateKey = ourIdPrivate;
-			IdentityKey ik = new IdentityKey();
+			Securecom.Messaging.Net.IdentityKey ik = new Securecom.Messaging.Net.IdentityKey();
 			ik.PublicKey = ourIdPub;
 			kp.PublicKey = ik;
 
 
-			IdentityKey tik = new IdentityKey();
+			Securecom.Messaging.Net.IdentityKey tik = new Securecom.Messaging.Net.IdentityKey();
 			tik.PublicKey = theirId;
 
 			RatchetingSession rs = new RatchetingSession();
@@ -235,7 +236,7 @@ namespace Stext
 			ChainKey mck = new ChainKey();
 
 			mck.Index = 0;
-			mck.Key = theirEphemPub.GetPublicKey();
+			mck.Key = theirEphemPub.Key();
 
 
 			// new sender chain
@@ -245,9 +246,9 @@ namespace Stext
 			// TODO: OK ?
 			rk.Key = srv.SessionState.rootKey;
 
-			Tuple<IRootKey, IChainKey> senderTuple = rk.CreateChain(theirEphemPub, ourPair);
-			IChainKey newSenderChain = senderTuple.Item2;
-			IRootKey newSenderRoot = senderTuple.Item1;
+			Tuple<RootKey, ChainKey> senderTuple = rk.CreateChain(theirEphemPub, ourPair);
+			ChainKey newSenderChain = senderTuple.Item2;
+			RootKey newSenderRoot = senderTuple.Item1;
 
 			System.Console.WriteLine("new Rook Key -" + Convert.ToBase64String(newSenderRoot.Key));
 			Securecom.Messaging.ecc.PublicKey shouldbekey = new Securecom.Messaging.ecc.PublicKey(Convert.FromBase64String("PHuMFzEbhDA3sdMq6Bp0WXvwvVJtR2tL+aFzxHs2wtY="), CurveConst.DjbType);
@@ -257,7 +258,7 @@ namespace Stext
 			System.Console.WriteLine("NEW SEnder Chain key key: " + Convert.ToBase64String(newSenderChain.Key));
 
 
-			byte[] shouldbechainkey = (new Securecom.Messaging.ecc.PublicKey(Convert.FromBase64String("vQouBvdRn/2+AhtnwRSfXa2U3AgOQspIknnrKAALHnU="), CurveConst.DjbType)).GetPublicKey();
+			byte[] shouldbechainkey = (new Securecom.Messaging.ecc.PublicKey(Convert.FromBase64String("vQouBvdRn/2+AhtnwRSfXa2U3AgOQspIknnrKAALHnU="), CurveConst.DjbType)).Key();
 
 			MessageKeys mk = mck.MessageKeys;
 
@@ -322,7 +323,7 @@ namespace Stext
 			srv.SessionState = new textsecure.SessionStructure ();
 */
 
-			IPreKeyRecord pkr = cfg.GetPreKey(pmu.PreKeyId);
+			PreKeyRecord pkr = cfg.GetPreKey(pmu.PreKeyId);
 
 			IdentityKeyUtil iku = new IdentityKeyUtil();
 
