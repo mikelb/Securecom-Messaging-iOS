@@ -1,33 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
+
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 
+using Org.BouncyCastle.Crypto;
 
 using Securecom.Messaging;
-using Securecom.Messaging.Utils;
+using Securecom.Messaging.ecc;
+using Securecom.Messaging.Entities;
 using Securecom.Messaging.Net;
 using Securecom.Messaging.Spec;
-
-using Securecom.Messaging.Entities;
 using Securecom.Messaging.Utils;
-
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities.Encoders;
-
-//using System.Security.Cryptography.X509Certificates;
-using System.Security;
-using System.IO;
-using System.Security.AccessControl;
-using System.Security.Cryptography;
-using Securecom.Messaging.ecc;
-using Securecom.Messaging.ecc;
 
 namespace Stext
 {
@@ -35,7 +19,6 @@ namespace Stext
 	[Register("AppDelegate")]
 	public partial class AppDelegate : UIApplicationDelegate
 	{
-
 		public UINavigationController rootNavigationController;
 		public int MODE_REGISTER_PHONE = 0;
 		public int MODE_REGISTER_EMAIL = 1;
@@ -45,6 +28,7 @@ namespace Stext
 		public String DeviceToken;
 
 #region VIEWS
+
 		public RegistrationView registrationView;
 		public VerificationView verificationView;
 		public ConfirmationView confirmationView;
@@ -56,7 +40,9 @@ namespace Stext
 		public MyIdKeyView myIdKeyView;
 		public ContactKeysView contactKeysView;
 		public SettingsView settingsView;
+
 #endregion
+
 		private STextConfig config;
 
 		public void CreateMessageManager(String phoneNumber)
@@ -76,10 +62,7 @@ namespace Stext
 			get{ return _manager; }
 		}
 
-		public override UIWindow Window {
-			get;
-			set;
-		}
+		public override UIWindow Window { get; set; }
 
 		private NSDictionary userSelectedNotification = null;
 
@@ -106,7 +89,9 @@ namespace Stext
 			}
 		}
 
-		public void SetNavigationProperties() {}
+		public void SetNavigationProperties()
+		{
+		}
 
 		private UIViewController GetLaunchView()
 		{
@@ -160,11 +145,8 @@ namespace Stext
 		}
 
 		public override void OnResignActivation(UIApplication application) {}
-
 		public override void DidEnterBackground(UIApplication application) {}
-
 		public override void WillEnterForeground(UIApplication application) {}
-
 		public override void WillTerminate(UIApplication application) {}
 
 		public override void RegisteredForRemoteNotifications(UIApplication application, NSData deviceToken)
@@ -177,8 +159,6 @@ namespace Stext
 
 			Console.WriteLine("RegisteredForRemoteNotifications where deviceToken=" + DeviceToken);
 		}
-
-
 
 		/// <Docs>Reference to the UIApplication that invoked this delegate method.</Docs>
 		/// <summary>
@@ -197,19 +177,14 @@ namespace Stext
 		public  String RatchetBobLiveTest(PublicKey ourEphemPub, PrivateKey ourEphemPriv, PublicKey theirBaseKey, PublicKey theirEphemPub,
 		                                  PublicKey ourIdPub, PrivateKey ourIdPrivate, PublicKey theirId, String emsg)
 		{
-
 			//AccountTests.SetupConfig ();
 			STextConfig cfg = STextConfig.GetInstance();
-
-
 			RecipientDevice rp = new RecipientDevice(13964, -1);
-
 
 			SessionRecordV2 srv = new SessionRecordV2(cfg.MasterSecret, rp);
 			srv.SessionState = new textsecure.SessionStructure();
 
 			//IdentityKeyUtil iku = new IdentityKeyUtil ();
-
 
 			KeyPair ourPair = new KeyPair();
 			ourPair.PrivateKey = ourEphemPriv;
@@ -221,23 +196,18 @@ namespace Stext
 			ik.PublicKey = ourIdPub;
 			kp.PublicKey = ik;
 
-
 			Securecom.Messaging.Net.IdentityKey tik = new Securecom.Messaging.Net.IdentityKey();
 			tik.PublicKey = theirId;
 
-			RatchetingSession rs = new RatchetingSession();
-
-			rs.InitializeSession(srv.SessionState, ourPair, theirBaseKey, ourPair, theirEphemPub, kp, tik);
+			RatchetingSession.InitializeSession(srv.SessionState, ourPair, theirBaseKey, ourPair, theirEphemPub, kp, tik);
 
 			System.Console.WriteLine("CIpher Key = [" + Convert.ToBase64String(srv.SessionState.senderChain.messageKeys[0].cipherKey) + "]");
 			System.Console.WriteLine("MAC Key = [" + Convert.ToBase64String(srv.SessionState.senderChain.messageKeys[0].macKey) + "]");
-
 
 			ChainKey mck = new ChainKey();
 
 			mck.Index = 0;
 			mck.Key = theirEphemPub.Key();
-
 
 			// new sender chain
 			RootKey rk = new RootKey();
@@ -257,7 +227,6 @@ namespace Stext
 
 			System.Console.WriteLine("NEW SEnder Chain key key: " + Convert.ToBase64String(newSenderChain.Key));
 
-
 			byte[] shouldbechainkey = (new Securecom.Messaging.ecc.PublicKey(Convert.FromBase64String("vQouBvdRn/2+AhtnwRSfXa2U3AgOQspIknnrKAALHnU="), CurveConst.DjbType)).Key();
 
 			MessageKeys mk = mck.MessageKeys;
@@ -273,16 +242,13 @@ namespace Stext
 
 			String message = Utils.FromBytes(thefinalmessage);
 
-
 			System.Console.WriteLine("MESSAGE: " + message);
 			return (message);
 		}
 
-
 		public void GregTest(String msg)
 		{
 			STextConfig cfg = STextConfig.GetInstance();
-			MasterCipher mc = new MasterCipher(cfg.MasterSecret);
 			byte[] sigkey = Convert.FromBase64String(cfg.AccountAttributes.SignalingKey);
 
 			byte[] dec = Convert.FromBase64String(msg);
@@ -293,18 +259,15 @@ namespace Stext
 
 			//		byte[] body = mc.VerifyMacBody (mac, dec);
 
-
 			byte[] dmsg = new byte[dec.Length - 1 - 10];
 			Array.Copy(dec, 1, dmsg, 0, dec.Length - 1 - 10);
 
 
 			
 			byte[] realsigkey = new byte[32];
-
 			Array.Copy(sigkey, 0, realsigkey, 0, 32);
 
-			byte[] decoded = mc.GetDecryptedBody(realsigkey, dmsg);
-
+			byte[] decoded = MasterCipher.GetDecryptedBody(realsigkey, dmsg);
 			MemoryStream ms = new MemoryStream(decoded);
 
 			textsecure.IncomingPushMessageSignal ips = ProtoBuf.Serializer.Deserialize<textsecure.IncomingPushMessageSignal>(ms);
@@ -312,29 +275,21 @@ namespace Stext
 			Securecom.Messaging.Net.PreKeyWhisperMessageBaseImpl pmu = new PreKeyWhisperMessageBaseImpl();
 			pmu.FromSerialize(ips.message);
 
-			/* RecipientDevice rp = new RecipientDevice(pmu.RegistrationId,-1);
-
-
+			/*
+			RecipientDevice rp = new RecipientDevice(pmu.RegistrationId,-1);
 			KeyExchangeProcessorV2 kep = new KeyExchangeProcessorV2 ();
 			kep.MasterSecret = cfg.MasterSecret;
-
-
 			SessionRecordV2 srv = new SessionRecordV2 (cfg.MasterSecret, rp);
 			srv.SessionState = new textsecure.SessionStructure ();
-*/
+			*/
 
 			PreKeyRecord pkr = cfg.GetPreKey(pmu.PreKeyId);
 
 			IdentityKeyUtil iku = new IdentityKeyUtil();
 
-			RatchetingSession rs = new RatchetingSession();
-
-
 			System.Console.WriteLine("<==================>");
 			System.Console.WriteLine("Our Ephem - " + Convert.ToBase64String(pkr.KeyPair.PublicKey.Serialize));
 			System.Console.WriteLine("Our Prv Ephem - " + Convert.ToBase64String(pkr.KeyPair.PrivateKey.Serialize));
-
-
 			System.Console.WriteLine("Their Base - " + Convert.ToBase64String(pmu.BaseKey.Serialize));
 			System.Console.WriteLine("Sender Ephem - " + Convert.ToBase64String(pmu.WhisperMessage.SenderEphemeral.Serialize));
 
@@ -345,54 +300,31 @@ namespace Stext
 			System.Console.WriteLine("MSG: " + Convert.ToBase64String(pmu.WhisperMessage.CipherText));
 			System.Console.WriteLine("<==================>");
 
-
 			String result = RatchetBobLiveTest(pkr.KeyPair.PublicKey, 
 				                pkr.KeyPair.PrivateKey, pmu.BaseKey, pmu.WhisperMessage.SenderEphemeral, iku.GetIdentityKeyPair(cfg.MasterSecret).PublicKey.PublicKey, 
 				                iku.GetIdentityKeyPair(cfg.MasterSecret).PrivateKey, pmu.IdentityKey.PublicKey, Convert.ToBase64String(pmu.WhisperMessage.CipherText));
-
-
+				
 			UIAlertView alert = new UIAlertView("New Whisper Message: ", result, null, "Ok");
 			alert.Show();
-
-
-			return;
-
-
-
-	
 		}
-
-
-		public String ProcessIncomingMessage(String msg)
+			
+		public static String ProcessIncomingMessage(String msg)
 		{
-			String ret = "";
-
-			MessageManager mm = new MessageManager();
-
-			byte[] buff = mm.ProcessIncomingMessage(msg);
-
-			ret = Utils.FromBytes(buff);
-
-			return (ret);
+			return Utils.FromBytes(MessageManager.ProcessIncomingMessage(msg));
 		}
-
-
 
 		/// <summary>
 		/// Processes the notification.
 		/// </summary>
 		/// <param name="options">Options.</param>
 		/// <param name="fromFinishedLaunching">If set to <c>true</c> from finished launching.</param>
-		public void ProcessNotification(NSDictionary options, bool fromFinishedLaunching)
+		public static void ProcessNotification(NSDictionary options, bool fromFinishedLaunching)
 		{
-			UIApplicationState state = UIApplication.SharedApplication.ApplicationState;
-
-			if (!options.ContainsKey(new NSString("aps"))) {
+			if (!options.ContainsKey(new NSString("aps")))
 				return;
-			}
 
+			UIApplicationState state = UIApplication.SharedApplication.ApplicationState;
 			NSDictionary aps = options.ObjectForKey(new NSString("aps")) as NSDictionary;
-            
            
 			//String alert = (aps[new NSString("alert")] as NSString).ToString();
 			//String payload = (aps[new NSString("m")] as NSString).ToString();
@@ -400,14 +332,10 @@ namespace Stext
 				NSString m = options.ObjectForKey(new NSString("m")) as NSString;
 				try { //do something with the message
 					String payload = m.ToString();
-
 					String msg = ProcessIncomingMessage(payload);
-
 					UIAlertView alert = new UIAlertView("New Whisper Message: ", msg, null, "Ok");
 					alert.Show();
-
 					//GregTest ( payload);
-
 					//UIAlertView alert = new UIAlertView("New message", payload, null, "Ok");
 					//alert.Show();
 				} catch (Exception e) {
@@ -428,4 +356,3 @@ namespace Stext
 		}
 	}
 }
-
