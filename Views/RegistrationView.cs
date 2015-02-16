@@ -140,7 +140,7 @@ namespace Stext
 			this.Continue.TouchUpInside += (sender, e) => {
 				String phoneNumber = PhPhoneNumberInput.Text;
 				appDelegate.CreateMessageManager(phoneNumber);
-				appDelegate.MessageManager.CreateAccount(false);
+				MessageManager.CreateAccount(phoneNumber, false);
 			};
 		}
 
