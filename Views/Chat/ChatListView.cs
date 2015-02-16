@@ -13,26 +13,33 @@ using PhoneNumbers;
 using System.Security.Cryptography;
 using System.Text;
 using Org.BouncyCastle.Utilities.Encoders;
+using Securecom.Messaging;
 
-namespace Stext{
+namespace Stext
+{
 
 
-	public partial class ChatListView : UIViewController{
+	public partial class ChatListView : UIViewController
+	{
 
 
 		AppDelegate appDelegate;
 		private CustomCellGroup tableCellGroup;
 		private CustomCellTableSource source;
 
-		public ChatListView () : base ("ChatListView", null){}
+		public ChatListView()
+			: base("ChatListView", null)
+		{
+		}
 
 
-		public override void ViewDidLoad (){
+		public override void ViewDidLoad()
+		{
 		
-			base.ViewDidLoad ();
+			base.ViewDidLoad();
 			this.appDelegate = (AppDelegate)UIApplication.SharedApplication.Delegate;
 
-			ShowEditButton ();
+			ShowEditButton();
 
 			this.composeButton.Clicked += (sender, e) => {
 				ComposeAction();
@@ -52,100 +59,110 @@ namespace Stext{
 
 
 			this.markAllReadButton.Clicked += (sender, e) => {
-				this.appDelegate.alert.showOkAlert("Mark All Read","Marking all chat messages as read.");
+				this.appDelegate.alert.showOkAlert("Mark All Read", "Marking all chat messages as read.");
 			};
 
 		}
 
 
-		public void RowSelected(UITableView tableView, NSIndexPath indexPath){
+		public void RowSelected(UITableView tableView, NSIndexPath indexPath)
+		{
 
 			ICustomCell selectedCell = source.CellGroups[indexPath.Section].Cells[indexPath.Row];
 
-			appDelegate.GoToView (appDelegate.chatView);
+			appDelegate.GoToView(appDelegate.chatView);
 
 		}
 
 
-		private void ShowDoneButton(){
-			NavigationItem.SetLeftBarButtonItem (doneButton, false);
-			NavigationItem.SetRightBarButtonItem (markAllReadButton,false);
-			this.table.SetEditing (true, true);
+		private void ShowDoneButton()
+		{
+			NavigationItem.SetLeftBarButtonItem(doneButton, false);
+			NavigationItem.SetRightBarButtonItem(markAllReadButton, false);
+			this.table.SetEditing(true, true);
 		}
 
 
-		private void ShowEditButton(){
-			NavigationItem.SetLeftBarButtonItem (editButton, false);
-			NavigationItem.SetRightBarButtonItem (composeButton,false);
-			this.table.SetEditing (false, true);
+		private void ShowEditButton()
+		{
+			NavigationItem.SetLeftBarButtonItem(editButton, false);
+			NavigationItem.SetRightBarButtonItem(composeButton, false);
+			this.table.SetEditing(false, true);
 		}
 
-		public override void ViewWillAppear (bool animated){
+		public override void ViewWillAppear(bool animated)
+		{
 			this.Title = "Chats";
-			this.PopulateTable ();
+			this.PopulateTable();
 		}
 
 
-		public void PopulateTable(){
+		public void PopulateTable()
+		{
 
-            List<CustomCellGroup> cellGroups = new List<CustomCellGroup>();
-            tableCellGroup = new CustomCellGroup();
-            cellGroups.Add(tableCellGroup);
+			List<CustomCellGroup> cellGroups = new List<CustomCellGroup>();
+			tableCellGroup = new CustomCellGroup();
+			cellGroups.Add(tableCellGroup);
 
-            AddressBook book = new AddressBook();
-	    List<String> contactlist = new List<String>();
-            book.RequestPermission().ContinueWith(t =>
-            {
-                if (!t.Result)
-                {
-                    Console.WriteLine("Permission denied by user or manifest");
-                    return;
-                }
+			AddressBook book = new AddressBook();
+			List<String> contactlist = new List<String>();
+			book.RequestPermission().ContinueWith(t => {
+				if (!t.Result) {
+					Console.WriteLine("Permission denied by user or manifest");
+					return;
+				}
 
-                int counter = 0;
-		int contact_count = book.Count();
-			Console.WriteLine("Address book count = "+contact_count);
+				int counter = 0;
+				int contact_count = book.Count();
+				Console.WriteLine("Address book count = " + contact_count);
 
-	                foreach (Contact contact in book.OrderBy(c => c.LastName))
-	                {
-			    int idx = counter++;
-			    if(!String.IsNullOrEmpty(contact.DisplayName)){
-				foreach (Phone value in contact.Phones)
-				{
-					if(!value.Number.Contains("*") || !value.Number.Contains("#"))
-				        {
-						var phoneUtil = PhoneNumberUtil.GetInstance();
-						PhoneNumber numberObject = phoneUtil.Parse(value.Number, "US");
-						var number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
-						contactlist.Add(number);
+				foreach (Contact contact in book.OrderBy(c => c.LastName)) {
+					int idx = counter++;
+					if (!String.IsNullOrEmpty(contact.DisplayName)) {
+						foreach (Phone value in contact.Phones) {
+							if (!value.Number.Contains("*") || !value.Number.Contains("#")) {
+								var phoneUtil = PhoneNumberUtil.GetInstance();
+								PhoneNumber numberObject = phoneUtil.Parse(value.Number, "US");
+								var number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
+								contactlist.Add(number);
+							}
+						}
+						foreach (Email value in contact.Emails) {
+							contactlist.Add(value.Address);
+						}
 					}
+					ChatCell chatCell = ChatCell.Create();
+					chatCell.SetHeader(contact.DisplayName);
+					//chatCell.SetSubheading("My latest message");
+					chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+					if ((idx & 1) == 1)
+						chatCell.MarkAsRead();
+					tableCellGroup.Cells.Add(chatCell);
 				}
-				foreach (Email value in contact.Emails)
-				{
-					contactlist.Add(value.Address);
+				Dictionary<string,string> tokens = getDirectoryServerTokenDictionary(contactlist);
+				List<String> list = new List<String>();
+				foreach (string key in tokens.Keys)
+					list.Add(key);
+				MessageManager mm = new MessageManager();
+				Console.WriteLine("intersecting " + list);
+				List<String> response = mm.RetrieveDirectory(list);
+				Console.WriteLine("we're here, response is " + response);
+				List<String> result = new List<String>();
+				foreach (string key in response) {
+					if (tokens[key] != null)
+						result.Add(tokens[key]);
 				}
-			    }
-	                    ChatCell chatCell = ChatCell.Create();
-	                    chatCell.SetHeader(contact.DisplayName);
-	                    //chatCell.SetSubheading("My latest message");
-	                    chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
-	                    if (idx % 2 == 1)
-	                        chatCell.MarkAsRead();
-	                    tableCellGroup.Cells.Add(chatCell);
-	                }
-			Dictionary<string,string> tokens = getDirectoryServerTokenDictionary(contactlist);
-			
+				Console.WriteLine(result);
+				source = new CustomCellTableSource(cellGroups);
+				source.RowSelectedAction = RowSelected;
 
-                source = new CustomCellTableSource(cellGroups);
-                source.RowSelectedAction = RowSelected;
+				table.Source = source;
 
-                table.Source = source;
-
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+			}, TaskScheduler.FromCurrentSynchronizationContext());
 
 
 
-            /*
+			/*
 			for (int x = 0; x <= 1; x++) {
 				ChatCell chatCell = ChatCell.Create ();
 				chatCell.SetHeader("John Doe");
@@ -166,23 +183,23 @@ namespace Stext{
 			
 		}
 
-		private Dictionary<string,string> getDirectoryServerTokenDictionary(List<string> e164numbers){
+		private Dictionary<string,string> getDirectoryServerTokenDictionary(List<string> e164numbers)
+		{
 			Dictionary<string,string> tokenDictionary = new Dictionary<string,string>(e164numbers.Count());
-			foreach (String number in e164numbers)
-			{
-				try{
+			foreach (String number in e164numbers) {
+				try {
 					String tokenWithPadding = getDirectoryServerToken(number);
 					string token = tokenWithPadding.Substring(0, tokenWithPadding.Length - 2);
 					tokenDictionary.Add(token, number);
-				}
-				catch(Exception e) {
+				} catch (Exception e) {
 
 				}
 			}
 			return tokenDictionary;
 		}
 
-		private string getDirectoryServerToken(string e164number){
+		private string getDirectoryServerToken(string e164number)
+		{
 			byte[] number = System.Text.Encoding.Default.GetBytes(e164number);
 			SHA1 sha1 = SHA1.Create();
 			byte[] hash = sha1.ComputeHash(number);
@@ -192,26 +209,27 @@ namespace Stext{
 			return Encoding.ASCII.GetString(Base64.Encode(hash_10));
 		}
 
-		private void ComposeAction(){
+		private void ComposeAction()
+		{
 
-			try{
+			try {
 
 				UIActionSheet actionSheet;
-				actionSheet = new UIActionSheet ();
+				actionSheet = new UIActionSheet();
 
-				actionSheet.AddButton ("New Chat");
-				actionSheet.AddButton ("New Group");		
-				actionSheet.AddButton ("Cancel");		
+				actionSheet.AddButton("New Chat");
+				actionSheet.AddButton("New Group");		
+				actionSheet.AddButton("Cancel");		
 
 				actionSheet.Clicked += delegate(object a, UIButtonEventArgs b) {
 					if (b.ButtonIndex == (0)) {
 
 					} else if (b.ButtonIndex == (1)) {
-						this.appDelegate.GoToView(this.appDelegate.newGroupView);
-					} 
+							this.appDelegate.GoToView(this.appDelegate.newGroupView);
+						} 
 				};
-				actionSheet.ShowInView (View);
-			}catch(Exception ex){
+				actionSheet.ShowInView(View);
+			} catch (Exception ex) {
 				Console.Write(ex.Message);
 			}
 		}
