@@ -233,9 +233,7 @@ namespace Stext
 
 			System.Console.WriteLine("CIPHER: " + Convert.ToBase64String(mk.CipherKey));
 
-			KeyGenerator kg = new KeyGenerator();
-
-			IBufferedCipher ciph = kg.GetAESWithCRT(mk, false);
+			IBufferedCipher ciph = KeyGenerator.GetAESWithCRT(mk, false);
 
 			byte[] sdata = Convert.FromBase64String("kbXz7w==");
 			byte[] thefinalmessage = ciph.DoFinal(Convert.FromBase64String(emsg));
