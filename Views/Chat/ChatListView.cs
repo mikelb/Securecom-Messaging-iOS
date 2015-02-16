@@ -9,6 +9,10 @@ using System.Collections.Generic;
 using Xamarin.Contacts;
 using System.Threading.Tasks;
 using System.Linq;
+using PhoneNumbers;
+using System.Security.Cryptography;
+using System.Text;
+using Org.BouncyCastle.Utilities.Encoders;
 
 namespace Stext{
 
@@ -89,6 +93,7 @@ namespace Stext{
             cellGroups.Add(tableCellGroup);
 
             AddressBook book = new AddressBook();
+	    List<String> contactlist = new List<String>();
             book.RequestPermission().ContinueWith(t =>
             {
                 if (!t.Result)
@@ -98,18 +103,38 @@ namespace Stext{
                 }
 
                 int counter = 0;
-                foreach (Contact contact in book.OrderBy(c => c.LastName))
-                {
-                    int idx = counter++;
-                    
-                    ChatCell chatCell = ChatCell.Create();
-                    chatCell.SetHeader(contact.DisplayName);
-                    chatCell.SetSubheading("My latest message");
-                    chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
-                    if (idx % 2 == 1)
-                        chatCell.MarkAsRead();
-                    tableCellGroup.Cells.Add(chatCell);
-                }
+		int contact_count = book.Count();
+			Console.WriteLine("Address book count = "+contact_count);
+
+	                foreach (Contact contact in book.OrderBy(c => c.LastName))
+	                {
+			    int idx = counter++;
+			    if(!String.IsNullOrEmpty(contact.DisplayName)){
+				foreach (Phone value in contact.Phones)
+				{
+					if(!value.Number.Contains("*") || !value.Number.Contains("#"))
+				        {
+						var phoneUtil = PhoneNumberUtil.GetInstance();
+						PhoneNumber numberObject = phoneUtil.Parse(value.Number, "US");
+						var number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
+						contactlist.Add(number);
+					}
+				}
+				foreach (Email value in contact.Emails)
+				{
+					contactlist.Add(value.Address);
+				}
+			    }
+	                    ChatCell chatCell = ChatCell.Create();
+	                    chatCell.SetHeader(contact.DisplayName);
+	                    //chatCell.SetSubheading("My latest message");
+	                    chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+	                    if (idx % 2 == 1)
+	                        chatCell.MarkAsRead();
+	                    tableCellGroup.Cells.Add(chatCell);
+	                }
+			Dictionary<string,string> tokens = getDirectoryServerTokenDictionary(contactlist);
+			
 
                 source = new CustomCellTableSource(cellGroups);
                 source.RowSelectedAction = RowSelected;
@@ -117,6 +142,7 @@ namespace Stext{
                 table.Source = source;
 
             }, TaskScheduler.FromCurrentSynchronizationContext());
+
 
 
             /*
@@ -140,6 +166,31 @@ namespace Stext{
 			
 		}
 
+		private Dictionary<string,string> getDirectoryServerTokenDictionary(List<string> e164numbers){
+			Dictionary<string,string> tokenDictionary = new Dictionary<string,string>(e164numbers.Count());
+			foreach (String number in e164numbers)
+			{
+				try{
+					String tokenWithPadding = getDirectoryServerToken(number);
+					string token = tokenWithPadding.Substring(0, tokenWithPadding.Length - 2);
+					tokenDictionary.Add(token, number);
+				}
+				catch(Exception e) {
+
+				}
+			}
+			return tokenDictionary;
+		}
+
+		private string getDirectoryServerToken(string e164number){
+			byte[] number = System.Text.Encoding.Default.GetBytes(e164number);
+			SHA1 sha1 = SHA1.Create();
+			byte[] hash = sha1.ComputeHash(number);
+			byte[] hash_10 = new byte[10];
+			Array.Copy(hash, hash_10, 10);
+
+			return Encoding.ASCII.GetString(Base64.Encode(hash_10));
+		}
 
 		private void ComposeAction(){
 
