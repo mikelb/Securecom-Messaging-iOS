@@ -144,7 +144,6 @@ namespace Stext
 			String verificationCode = confCodeInput.Text;
 
 			InvokeInBackground(delegate {
-				MessageManager manager = appDelegate.MessageManager;
 				while (STATE != STATE_GO_TO_CHATVIEW) {
 					switch (STATE) {
 					default:
@@ -155,7 +154,7 @@ namespace Stext
 						STextConfig cfg = STextConfig.GetInstance();
 						String signalingKey = cfg.AccountAttributes.SignalingKey;
 						int registrationId = cfg.AccountAttributes.RegistrationId;
-						manager.VerifyAccount(verificationCode, signalingKey, true, registrationId);
+						MessageManager.VerifyAccount(verificationCode, signalingKey, true, registrationId);
 						break;
 					case STATE_GENERATING_KEYS:
 						//MasterSecretUtil masterSecretUtil = new MasterSecretUtil();
@@ -164,13 +163,13 @@ namespace Stext
 						//IdentityKeyUtil identityKeyUtil = new IdentityKeyUtil();
 						//identityKeyUtil.GenerateIdentityKeys(masterSecret);
 						STextConfig st = STextConfig.GetInstance();
-						manager.RegisterPreKeys(st.IdentityKey, st.LastResortKey, st.Keys);
+						MessageManager.RegisterPreKeys(st.IdentityKey, st.LastResortKey, st.Keys);
 						break;
 					case STATE_REGISTERING_WITH_SERVER:
 						//set up for push notification
 						String dt = appDelegate.DeviceToken;
 						dt = dt.Replace("<", String.Empty).Replace(">", String.Empty).Replace(" ", String.Empty);
-						manager.RegisterApnId(dt);
+						MessageManager.RegisterApnId(dt);
 						InvokeOnMainThread(delegate {
 							ApplicationPreferences preference = new ApplicationPreferences();
 							preference.LocalNumber = this.appDelegate.registrationView.PhPhoneNumberInput.Text;

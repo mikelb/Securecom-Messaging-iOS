@@ -49,18 +49,17 @@ namespace Stext
 		{
 			config.MobileNumber = phoneNumber;
 			config.Password = "3sApmcX4px5tp2b9dPH46lMI";
-
 			config.SaveConfig();
 
-			System.Security.Cryptography.X509Certificates.X509Certificate certificate = new System.Security.Cryptography.X509Certificates.X509Certificate("signing-ca-1.crt");
-			_manager = new MessageManager(new Uri(config.ServerUrl), phoneNumber, null, certificate);
+			//System.Security.Cryptography.X509Certificates.X509Certificate certificate = new System.Security.Cryptography.X509Certificates.X509Certificate("signing-ca-1.crt");
+			//_manager = new MessageManager(new Uri(config.ServerUrl), phoneNumber, null, certificate);
 		}
 
-		private MessageManager _manager;
+		//private MessageManager _manager;
 
-		public MessageManager MessageManager {
-			get{ return _manager; }
-		}
+		//public MessageManager MessageManager {
+		//	get{ return _manager; }
+		//}
 
 		public override UIWindow Window { get; set; }
 

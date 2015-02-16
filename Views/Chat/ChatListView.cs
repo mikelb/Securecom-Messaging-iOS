@@ -143,9 +143,9 @@ namespace Stext
 				List<String> list = new List<String>();
 				foreach (string key in tokens.Keys)
 					list.Add(key);
-				MessageManager mm = new MessageManager();
+				//MessageManager mm = new MessageManager();
 				Console.WriteLine("intersecting " + list);
-				List<String> response = mm.RetrieveDirectory(list);
+				List<String> response = MessageManager.RetrieveDirectory(list);
 				Console.WriteLine("we're here, response is " + response);
 				List<String> result = new List<String>();
 				foreach (string key in response) {
