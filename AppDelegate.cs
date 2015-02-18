@@ -185,18 +185,11 @@ namespace Stext
 
 			//IdentityKeyUtil iku = new IdentityKeyUtil ();
 
-			KeyPair ourPair = new KeyPair();
-			ourPair.PrivateKey = ourEphemPriv;
-			ourPair.PublicKey = ourEphemPub;
+			KeyPair ourPair = new KeyPair(ourEphemPub, ourEphemPriv);
 
-			Securecom.Messaging.Net.IdentityKeyPair kp = new Securecom.Messaging.Net.IdentityKeyPair();
-			kp.PrivateKey = ourIdPrivate;
-			Securecom.Messaging.Net.IdentityKey ik = new Securecom.Messaging.Net.IdentityKey();
-			ik.PublicKey = ourIdPub;
-			kp.PublicKey = ik;
-
-			Securecom.Messaging.Net.IdentityKey tik = new Securecom.Messaging.Net.IdentityKey();
-			tik.PublicKey = theirId;
+			Securecom.Messaging.Net.IdentityKey ik = new Securecom.Messaging.Net.IdentityKey(ourIdPub);
+			Securecom.Messaging.Net.IdentityKeyPair kp = new Securecom.Messaging.Net.IdentityKeyPair(ik, ourIdPrivate);
+			Securecom.Messaging.Net.IdentityKey tik = new Securecom.Messaging.Net.IdentityKey(theirId);
 
 			RatchetingSession.InitializeSession(srv.SessionState, ourPair, theirBaseKey, ourPair, theirEphemPub, kp, tik);
 
@@ -269,8 +262,7 @@ namespace Stext
 
 			textsecure.IncomingPushMessageSignal ips = ProtoBuf.Serializer.Deserialize<textsecure.IncomingPushMessageSignal>(ms);
 
-			Securecom.Messaging.Net.PreKeyWhisperMessageBaseImpl pmu = new PreKeyWhisperMessageBaseImpl();
-			pmu.FromSerialize(ips.message);
+			Securecom.Messaging.Net.PreKeyWhisperMessageBaseImpl pmu = PreKeyWhisperMessageBaseImpl.FromSerialize(ips.message);
 
 			/*
 			RecipientDevice rp = new RecipientDevice(pmu.RegistrationId,-1);
@@ -307,7 +299,9 @@ namespace Stext
 			
 		public static String ProcessIncomingMessage(String msg)
 		{
-			return Utils.FromBytes(MessageManager.ProcessIncomingMessage(msg));
+			String result = Utils.FromBytes(MessageManager.ProcessIncomingMessage(msg));
+			Console.WriteLine("result is " + result);
+			return result;
 		}
 
 		/// <summary>
