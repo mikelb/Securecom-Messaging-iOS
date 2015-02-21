@@ -15,6 +15,14 @@ using Securecom.Messaging.Entities;
 using System.Security.Cryptography.X509Certificates;
 using System.Security;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using Org.BouncyCastle.Utilities.Encoders;
+using Xamarin.Contacts;
+using PhoneNumbers;
+using System.Threading.Tasks;
 
 namespace Stext
 {
@@ -132,7 +140,14 @@ namespace Stext
 		{
 			base.ViewDidLoad();
 			this.appDelegate = (AppDelegate)UIApplication.SharedApplication.Delegate;
+			var g = new UITapGestureRecognizer(() => View.EndEditing(true));
+			View.AddGestureRecognizer(g);
+
 			done.TouchUpInside += (sender, e) => {
+				confCodeInput.ShouldReturn += (textField) => { 
+					textField.ResignFirstResponder();
+					return true;
+				};
 				ShowProcessingView();
 				StartProcessing();
 			};
@@ -174,6 +189,9 @@ namespace Stext
 							ApplicationPreferences preference = new ApplicationPreferences();
 							preference.LocalNumber = this.appDelegate.registrationView.PhPhoneNumberInput.Text;
 						});
+
+						// Do Directory sync
+						RefreshPushDirectory();
 						break;
 					}
 					STATE++;
@@ -182,6 +200,92 @@ namespace Stext
 					});
 				}
 			});
+		}
+
+		public static void RefreshPushDirectory(){
+			AddressBook book = new AddressBook();
+			List<String> contactlist = new List<String>();
+			book.RequestPermission().ContinueWith(t => {
+				if (!t.Result) {
+					Console.WriteLine("Permission denied by user or manifest");
+					return;
+				}
+
+				int counter = 0;
+				int contact_count = book.Count();
+				Console.WriteLine("Address book count = " + contact_count);
+
+				foreach (Contact contact in book.OrderBy(c => c.LastName)) {
+					int idx = counter++;
+					if (!String.IsNullOrEmpty(contact.DisplayName)) {
+						foreach (Phone value in contact.Phones) {
+							if (!value.Number.Contains("*") || !value.Number.Contains("#")) {
+								var phoneUtil = PhoneNumberUtil.GetInstance();
+								PhoneNumber numberObject = phoneUtil.Parse(value.Number, "US");
+								var number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
+								contactlist.Add(number);
+							}
+						}
+						foreach (Email value in contact.Emails) {
+							contactlist.Add(value.Address);
+						}
+					}
+
+				}
+				Dictionary<string,string> tokens = getDirectoryServerTokenDictionary(contactlist);
+				List<String> list = new List<String>();
+				foreach (string key in tokens.Keys)
+					list.Add(key);
+				Console.WriteLine("intersecting " + list);
+				List<String> response = MessageManager.RetrieveDirectory(list);
+				List<String> result = new List<String>();
+				foreach (string key in response) {
+					if (tokens[key] != null)
+						result.Add(tokens[key]);
+				}
+				Console.WriteLine("rkolli >>>>> we're here 1");
+				// Figure out where the SQLite database will be.
+				using (var conn= new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase))
+				{
+					Console.WriteLine("rkolli >>>>> we're here 2");
+					conn.CreateTable<PushContact>();
+
+					foreach(String contact in result){
+						Console.WriteLine("we're here, push contact = " + contact);
+						var pcontact = new PushContact{Number = contact};
+						conn.Insert(pcontact);
+					}
+				}
+
+				Console.WriteLine("rkolli >>>>> we're here 3");
+
+			}, TaskScheduler.Current);
+		}
+
+		private static Dictionary<string,string> getDirectoryServerTokenDictionary(List<string> e164numbers)
+		{
+			Dictionary<string,string> tokenDictionary = new Dictionary<string,string>(e164numbers.Count());
+			foreach (String number in e164numbers) {
+				try {
+					String tokenWithPadding = getDirectoryServerToken(number);
+					string token = tokenWithPadding.Substring(0, tokenWithPadding.Length - 2);
+					tokenDictionary.Add(token, number);
+				} catch (Exception e) {
+
+				}
+			}
+			return tokenDictionary;
+		}
+
+		private static string getDirectoryServerToken(string e164number)
+		{
+			byte[] number = System.Text.Encoding.Default.GetBytes(e164number);
+			SHA1 sha1 = SHA1.Create();
+			byte[] hash = sha1.ComputeHash(number);
+			byte[] hash_10 = new byte[10];
+			Array.Copy(hash, hash_10, 10);
+
+			return Encoding.ASCII.GetString(Base64.Encode(hash_10));
 		}
 
 		private void SetContent()

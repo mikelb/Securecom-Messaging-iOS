@@ -22,13 +22,21 @@ namespace Stext{
 			this.RoundAvatar ();
 		}
 
+		public string GetHeader(){
+			return this.labelHeader.Text;
+		}
+
 		public void SetSubheading(string subHeading){
 			this.labelSubheader.Text = subHeading;
 			this.labelSubheaderRead.Text = subHeading;
 		}
 
+		public void SetLabelTime(string time){
+			this.labelTime.Text = time;
+		}
+
 		public override float getHeight(){
-			return 44.0f;
+			return 64.0f;
 		}
 
 		public void RoundAvatar(){

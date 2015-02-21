@@ -12,6 +12,7 @@ using Securecom.Messaging.Entities;
 using Securecom.Messaging.Net;
 using Securecom.Messaging.Spec;
 using Securecom.Messaging.Utils;
+using System.Collections.Generic;
 
 namespace Stext
 {
@@ -26,6 +27,10 @@ namespace Stext
 		public Alert alert;
 
 		public String DeviceToken;
+		private static string documents = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+		public static string _pathToMessagesDatabase = Path.Combine(documents, "Messages.db");
+		public static string _pathToContactsDatabase = Path.Combine(documents, "Securecom_Contacts.db");
+
 
 #region VIEWS
 
@@ -100,6 +105,10 @@ namespace Stext
 			return chatListView;
 		}
 
+		private void RefreshChatListView(){
+			chatListView.PopulateTable();
+		}
+
 		public void GoToView(UIViewController view)
 		{
 			try {
@@ -141,6 +150,15 @@ namespace Stext
 			myIdKeyView = new MyIdKeyView();
 			contactKeysView = new ContactKeysView();
 			settingsView = new SettingsView();
+
+			// Create and Initialize Apple push message DB
+			// Figure out where the SQLite database will be.
+			using (var conn= new SQLite.SQLiteConnection(_pathToMessagesDatabase))
+			{
+				Console.WriteLine("rkolli >>>>> Connect to Messages DB, if doesn't exist! create PushChatThread, PushMessage tables");
+				conn.CreateTable<PushChatThread>();
+				conn.CreateTable<PushMessage>();
+			}
 		}
 
 		public override void OnResignActivation(UIApplication application) {}
@@ -309,7 +327,7 @@ namespace Stext
 		/// </summary>
 		/// <param name="options">Options.</param>
 		/// <param name="fromFinishedLaunching">If set to <c>true</c> from finished launching.</param>
-		public static void ProcessNotification(NSDictionary options, bool fromFinishedLaunching)
+		public void ProcessNotification(NSDictionary options, bool fromFinishedLaunching)
 		{
 			if (!options.ContainsKey(new NSString("aps")))
 				return;
@@ -324,8 +342,7 @@ namespace Stext
 				try { //do something with the message
 					String payload = m.ToString();
 					String msg = ProcessIncomingMessage(payload);
-					UIAlertView alert = new UIAlertView("New Whisper Message: ", msg, null, "Ok");
-					alert.Show();
+					updateChatThread(payload, msg);
 					//GregTest ( payload);
 					//UIAlertView alert = new UIAlertView("New message", payload, null, "Ok");
 					//alert.Show();
@@ -344,6 +361,62 @@ namespace Stext
 					break;
 				}
 			}
+		}
+
+		private void updateChatThread(string payload, string msg){
+			const string sender_pattern = "\"sender\":\"";
+			const string messageid_pattern = "\"messageId\":";
+			int a = payload.IndexOf(sender_pattern) + sender_pattern.Length;
+			int b = payload.IndexOf("\"", a);
+			string sender = payload.Substring(a, b - a);
+
+			int x = payload.IndexOf(messageid_pattern) + messageid_pattern.Length;
+			int y = payload.IndexOf(",", x);
+			string messageid = payload.Substring(x, y - x);
+			Console.WriteLine("rkolli >>>>> @ProcessNotification, sender = "+sender+", messageid = "+messageid+", message body = "+msg);
+			// Figure out where the SQLite database will be.
+			using (var conn= new SQLite.SQLiteConnection(_pathToMessagesDatabase))
+			{
+				int present_thread_id = 0;
+				// Check if there is an existing thread for this sender
+				List<PushChatThread> pctList = conn.Query<PushChatThread>("select * from PushChatThread");
+
+				if (pctList != null && pctList.Count > 0) {
+					foreach (PushChatThread pct in pctList) {
+						Console.WriteLine("rkolli >>>>> @updateChatThread"+", Count = " + pctList.Count);
+						Console.WriteLine("rkolli >>>>> @updateChatThread"+", Number = " + pct.Number + ", Sender = " + sender + ", ID = " + pct.ID);
+						if (pct.Number.Equals(sender)) {
+							present_thread_id = pct.ID;
+							Console.WriteLine("rkolli >>>>> @updateChatThread, updaing chat row, present_thread_id = " + present_thread_id);
+							conn.Execute("UPDATE PushChatThread Set Snippet = ?, TimeStamp = ?, Message_count = ?, Read = ?, Type = ? WHERE ID = ?", msg, messageid, 1, 1, "Push", present_thread_id);
+							Console.WriteLine("rkolli >>>>> @updateChatThread, update successful");
+							conn.Commit();
+							break;
+						}
+					}
+				}
+
+				if (present_thread_id == 0) {
+					var pct_val = new PushChatThread{Number = sender, Recipient_id = 0, TimeStamp = Convert.ToInt64(messageid), Message_count = 1, Snippet = msg, Read = 1, Type = "Push"};
+					conn.Insert(pct_val);
+					present_thread_id = pct_val.ID;
+					Console.WriteLine("rkolli >>>>> @updateChatThread, inserting new chat row, present_thread_id = " + present_thread_id);
+				}
+				Console.WriteLine("rkolli >>>>> inserting message into the DB");
+
+				var pmessage = new PushMessage{Thread_id = present_thread_id, Number = sender, TimeStamp = CurrentTimeMillis(), TimeStamp_Sent = Convert.ToInt64(messageid), Read = 1, Message = msg, Service = "Push"};
+				conn.Insert(pmessage);
+				conn.Commit();
+				conn.Close();
+			}
+			RefreshChatListView();
+			UIAlertView alert = new UIAlertView("New Whisper Message ", msg, null, "Ok");
+			alert.Show();
+		}
+
+		public static long CurrentTimeMillis()
+		{
+			return (long) (DateTime.UtcNow -  new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
 		}
 	}
 }

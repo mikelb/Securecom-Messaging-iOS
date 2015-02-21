@@ -7,6 +7,10 @@ using MonoTouch.UIKit;
 using System.Collections.Generic;
 using System.Threading;
 using MonoTouch.MessageUI;
+using Xamarin.Contacts;
+using System.Threading.Tasks;
+using System.IO;
+using System.Linq;
 
 namespace Stext{
 
@@ -17,6 +21,7 @@ namespace Stext{
 		private CustomCellGroup tableCellGroup;
 		private CustomCellTableSource source;
 		private List<CustomCellGroup> cellGroups;
+		private AddressBook book = new AddressBook();
 
 		#region entity fields
 		public string name;
@@ -79,14 +84,114 @@ namespace Stext{
 			ButtonActions();
 
 			base.ViewDidLoad ();
+
+			search.TextChanged += async (object sender, UISearchBarTextChangedEventArgs e) => {
+				string searchText = e.SearchText.ToLower();
+				Console.WriteLine("Search text = " + e.SearchText);
+				if(!e.SearchText.Equals("")){
+					List<CustomCellGroup> mCellGroups = new List<CustomCellGroup>();
+					CustomCellGroup mTableCellGroup = new CustomCellGroup { Name = "No Results" };
+
+					foreach (Contact contact in book.OrderBy(c => c.DisplayName)) {
+						bool found = false;
+						if (!String.IsNullOrEmpty(contact.DisplayName)) {
+							//Decide contact group based on the first character
+							String group = contact.DisplayName.Substring(0, 1).ToUpper();
+							if(contact.DisplayName.ToLower().Contains(searchText)){
+								found = true;
+							}else if(contact.Phones.Any() || contact.Emails.Any()){
+								foreach (Phone p in contact.Phones) {
+									String temp = p.Number;
+									temp = temp.Replace(")", "");
+									temp = temp.Replace("-", "");
+									temp = temp.Replace(" ", "");
+									found |= temp.Contains(searchText);
+								}
+
+								foreach (Email email in contact.Emails) {
+									found |= email.Address.ToLower().Contains(searchText);
+								}
+							}
+
+							if(found)
+							{
+								mTableCellGroup.Name = "Search Results";
+								Console.WriteLine("rkolli >>>>> Adding Contacts, group = " + group);
+								Console.WriteLine("rkolli >>>>> Search result, Contact display name = " + contact.DisplayName);
+								ContactListCell cell = ContactListCell.Create();
+								cell.SetName(contact.DisplayName);
+								foreach (Phone p in contact.Phones) {
+									Console.WriteLine("rkolli >>>>> Search result, Contact Number = " + p.Number);
+									cell.SetPhone(p.Number);
+									break;
+								}
+								foreach (Email email in contact.Emails) {
+									Console.WriteLine("rkolli >>>>> Search result, Contact Email = " + email.Address);
+									cell.SetEmail(email.Address);
+									break;
+								}
+
+								mTableCellGroup.Cells.Add (cell);
+							}
+						}
+					}
+
+					mCellGroups.Add(mTableCellGroup);
+
+					source = new CustomCellTableSource(mCellGroups);
+					source.RowSelectedAction = RowSelected;
+					table.Source = source;
+				}else {
+					PopulateTableWithExistingContactsData();
+				}
+				AddTableRefresh ();
+//				foreach (Contact contact in book.OrderBy(c => c.DisplayName)) {
+//					if (!String.IsNullOrEmpty(contact.DisplayName)) {
+//						//Decide contact group based on the first character
+//						String group = contact.DisplayName.Substring(0, 1).ToUpper();
+//						Console.WriteLine("rkolli >>>>> Adding Contacts, group = " + group);
+//						bool name_exists = false;
+//						if(contact.DisplayName.Contains(e.SearchText) || contact.Phones.First(Phone => Phone.Number.Contains(e.SearchText)).Number != null || 
+//												contact.Emails.First(Email => Email.Address.Contains(e.SearchText)).Address != null){
+//							foreach (CustomCellGroup ccg in cellGroups) {
+//								if (ccg.Name.Equals(group)) {
+//									name_exists = true;
+//									tableCellGroup = ccg;
+//								}
+//							}
+//							ContactListCell cell = ContactListCell.Create();
+//							cell.SetName(contact.DisplayName);
+//							if (contact.Phones.Any()) {
+//								foreach (Phone p in contact.Phones) {
+//									cell.SetPhone(p.Number);
+//									break;
+//								}
+//							}
+//							if (contact.Emails.Any()) {
+//								foreach (Email email in contact.Emails) {
+//									cell.SetEmail(email.Address);
+//									break;
+//								}
+//							}
+//							if (!name_exists) {
+//								tableCellGroup = new CustomCellGroup {
+//									Name = group
+//								};
+//								cellGroups.Add(tableCellGroup);
+//							}
+//							tableCellGroup.Cells.Add(cell);
+//						}
+//					}
+//				}
+			};
 		}
 
 
 		private void ButtonActions(){
 
-			filterButton.Clicked += (sender, e) => {
-				FilterAction();
-			};
+			filterButton.Clicked += (sender, e) => FilterAction();
+
+			cancelButton.Clicked += (sender, e) => appDelegate.GoToView(appDelegate.chatListView);
 
 		}
 
@@ -108,54 +213,73 @@ namespace Stext{
 			}
 		}
 
+		private void AddContactsData(){
+			List<String> contactlist = new List<String>();
+			List<PushContact> pc;
+			book.RequestPermission().ContinueWith(t => {
+				if (!t.Result) {
+					Console.WriteLine("Permission denied by user or manifest");
+					return;
+				}
+			}, TaskScheduler.FromCurrentSynchronizationContext());
 
-		private void AddTestData(){
+			// Figure out where the SQLite database will be.
+			Console.WriteLine("rkolli >>>>> Reading Contacts");
+			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase)) {
+				pc = conn.Query<PushContact>("select * from PushContact");
+				foreach (PushContact _c in pc) {
+					Console.WriteLine("Db Contacts = " + _c.Number);
+				}
+			}
 
-			tableCellGroup = new CustomCellGroup { Name = "A" };
-			cellGroups.Add (tableCellGroup);
+			foreach (Contact contact         in book.OrderBy(c => c.DisplayName)) {
+				if (!String.IsNullOrEmpty(contact.DisplayName)) {
+					//Decide contact group based on the first character
+					String group = contact.DisplayName.Substring(0, 1).ToUpper();
+					Console.WriteLine("rkolli >>>>> Adding Contacts, group = "+group);
+					bool name_exists = false;
+					foreach (CustomCellGroup ccg in cellGroups) {
+						if (ccg.Name.Equals(group)) {
+							name_exists = true;
+							tableCellGroup = ccg;
+						}
+					}
 
-			ContactListCell cell = ContactListCell.Create ();
-			cell.SetName("Johny Appleseed");
-			cell.SetEmail("jonny.appleseed@gmail.com");
-			cell.SetPhone("+233665588");
-			tableCellGroup.Cells.Add (cell);
+					if (!name_exists) {
+						tableCellGroup = new CustomCellGroup { Name = group };
+						cellGroups.Add(tableCellGroup);
+					} 
 
-			tableCellGroup = new CustomCellGroup { Name = "D" };
-			cellGroups.Add (tableCellGroup);
+					ContactListCell cell = ContactListCell.Create ();
+					cell.SetName(contact.DisplayName);
+					if (contact.Phones.Any()) {
+						foreach (Phone p in contact.Phones) {
+							cell.SetPhone(p.Number);
+							break;
+						}
+					}
 
-			cell = ContactListCell.Create ();
-			cell.SetName("John Doe");
-			cell.SetEmail("jon.doe@gmail.com");
-			cell.SetPhone("+123456789");
-			cell.SetIconChecked ();
-			tableCellGroup.Cells.Add (cell);
-
-			tableCellGroup = new CustomCellGroup { Name = "S" };
-			cellGroups.Add (tableCellGroup);
-
-			cell = ContactListCell.Create ();
-			cell.SetName("John Smith");
-			cell.SetEmail("jon.smith@gmail.com");
-			cell.SetPhone("+6502258866");
-			cell.SetIconLocked ();
-			tableCellGroup.Cells.Add (cell);
-
-			tableCellGroup = new CustomCellGroup { Name = "V" };
-			cellGroups.Add (tableCellGroup);
-
-			cell = ContactListCell.Create ();
-			cell.SetName("Juan Valdez");
-			cell.SetEmail("jvaldez@msn.com");
-			cell.SetPhone("+5588996655");
-			cell.SetIconLocked ();
-			tableCellGroup.Cells.Add (cell);
-
+					if (contact.Emails.Any()) {
+						foreach (Email e in contact.Emails) {
+							cell.SetEmail(e.Address);
+							break;
+						}
+					}
+					tableCellGroup.Cells.Add (cell);
+				}
+			}
 		}
-
 
 		public void PopulateTable(){
 			cellGroups = new List<CustomCellGroup> ();
-			AddTestData ();
+			AddContactsData ();
+			//AddTestData();
+			source = new CustomCellTableSource(cellGroups);
+			source.RowSelectedAction = RowSelected;
+			table.Source = source;
+		}
+
+		public void PopulateTableWithExistingContactsData(){
 			source = new CustomCellTableSource(cellGroups);
 			source.RowSelectedAction = RowSelected;
 			table.Source = source;

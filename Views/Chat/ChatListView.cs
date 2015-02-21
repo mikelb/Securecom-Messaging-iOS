@@ -14,6 +14,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Org.BouncyCastle.Utilities.Encoders;
 using Securecom.Messaging;
+using System.IO;
+using MonoTouch.AddressBook;
 
 namespace Stext
 {
@@ -35,7 +37,7 @@ namespace Stext
 
 		public override void ViewDidLoad()
 		{
-		
+			Console.WriteLine("rkolli >>>>> @HERE1");
 			base.ViewDidLoad();
 			this.appDelegate = (AppDelegate)UIApplication.SharedApplication.Delegate;
 
@@ -71,6 +73,8 @@ namespace Stext
 			ICustomCell selectedCell = source.CellGroups[indexPath.Section].Cells[indexPath.Row];
 
 			appDelegate.GoToView(appDelegate.chatView);
+			UIAlertView alert = new UIAlertView("Chat index selected", ""+indexPath.Row, null, "Ok");
+			alert.Show();
 
 		}
 
@@ -92,75 +96,89 @@ namespace Stext
 
 		public override void ViewWillAppear(bool animated)
 		{
+			Console.WriteLine("rkolli >>>>> @HERE2");
 			this.Title = "Chats";
 			this.PopulateTable();
 		}
 
-
 		public void PopulateTable()
 		{
+			List<PushChatThread> pm;
 
 			List<CustomCellGroup> cellGroups = new List<CustomCellGroup>();
 			tableCellGroup = new CustomCellGroup();
 			cellGroups.Add(tableCellGroup);
 
-			AddressBook book = new AddressBook();
-			List<String> contactlist = new List<String>();
-			book.RequestPermission().ContinueWith(t => {
-				if (!t.Result) {
-					Console.WriteLine("Permission denied by user or manifest");
-					return;
-				}
+			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+				bool headerExists = false;
+				Console.WriteLine("rkolli >>>>> @PopulateTable, fetching messages");
+				pm = conn.Query<PushChatThread>("SELECT * FROM PushChatThread ORDER BY TimeStamp DESC");
+				int count = 0;
+				foreach (PushChatThread _m in pm) {
+					Console.WriteLine("Db APMessages, Number = " + _m.Number+", message id = "+_m.TimeStamp+", Message Body = "+_m.Snippet+", ID = "+_m.ID);
+//					List<ICustomCell> temp = tableCellGroup.Cells;
+//					foreach (ChatCell icc in temp) {
+//						Console.WriteLine("rkolli >>>>> Header = "+icc.GetHeader()+", message = "+_m.Snippet);
+//							if (icc.GetHeader().Equals(_m.Number)) {
+//								headerExists = true;
+//								ChatCell chatCell = ChatCell.Create();
+//								chatCell.SetHeader(_m.Number);
+//								chatCell.SetSubheading(_m.Snippet);
+//								DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(_m.TimeStamp / 1000).ToLocalTime();
+//								Console.WriteLine("rkolli >>>>> Time after format is " + epoch.ToString("HH:mm"));
+//								chatCell.SetLabelTime("" + epoch.ToString("HH:mm"));
+//								chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+//								tableCellGroup.Cells.RemoveAt(_m.ID - 1);
+//								tableCellGroup.Cells.Insert(_m.ID - 1, chatCell); 
+//								break;
+//							}
+//						}
+					//}
 
-				int counter = 0;
-				int contact_count = book.Count();
-				Console.WriteLine("Address book count = " + contact_count);
+					string display_name = _m.Number;
 
-				foreach (Contact contact in book.OrderBy(c => c.LastName)) {
-					int idx = counter++;
-					if (!String.IsNullOrEmpty(contact.DisplayName)) {
-						foreach (Phone value in contact.Phones) {
-							if (!value.Number.Contains("*") || !value.Number.Contains("#")) {
-								var phoneUtil = PhoneNumberUtil.GetInstance();
-								PhoneNumber numberObject = phoneUtil.Parse(value.Number, "US");
-								var number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
-								contactlist.Add(number);
+					AddressBook book = new AddressBook();
+
+					foreach (Contact c in book) {
+						if (c.Phones.Any()) {
+							foreach (Phone p in c.Phones) {
+								if (_m.Number.Equals(p.Number)) {
+									display_name = c.DisplayName;
+								}
+								break;
 							}
 						}
-						foreach (Email value in contact.Emails) {
-							contactlist.Add(value.Address);
+
+						if (c.Emails.Any()) {
+							foreach (Email e in c.Emails) {
+								if (_m.Number.Equals(e.Address)) {
+									display_name = c.DisplayName;
+								}
+								break;
+							}
 						}
 					}
-					ChatCell chatCell = ChatCell.Create();
-					chatCell.SetHeader(contact.DisplayName);
-					//chatCell.SetSubheading("My latest message");
-					chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
-					if ((idx & 1) == 1)
-						chatCell.MarkAsRead();
-					tableCellGroup.Cells.Add(chatCell);
+
+
+					//if (!headerExists) {
+						ChatCell chatCell = ChatCell.Create();
+						chatCell.SetHeader(display_name);
+						chatCell.SetSubheading(_m.Snippet);
+						DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(_m.TimeStamp/1000).ToLocalTime();
+						Console.WriteLine("rkolli >>>>> Time after format is "+epoch.ToString("HH:mm"));
+						chatCell.SetLabelTime("" + epoch.ToString("HH:mm"));
+						chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+//					if ((idx & 1) == 1)
+//						chatCell.MarkAsRead();
+						tableCellGroup.Cells.Insert(count, chatCell);
+						count++;
+					//}
+
 				}
-				Dictionary<string,string> tokens = getDirectoryServerTokenDictionary(contactlist);
-				List<String> list = new List<String>();
-				foreach (string key in tokens.Keys)
-					list.Add(key);
-				//MessageManager mm = new MessageManager();
-				Console.WriteLine("intersecting " + list);
-				List<String> response = MessageManager.RetrieveDirectory(list);
-				Console.WriteLine("we're here, response is " + response);
-				List<String> result = new List<String>();
-				foreach (string key in response) {
-					if (tokens[key] != null)
-						result.Add(tokens[key]);
-				}
-				Console.WriteLine(result);
-				source = new CustomCellTableSource(cellGroups);
-				source.RowSelectedAction = RowSelected;
-
-				table.Source = source;
-
-			}, TaskScheduler.FromCurrentSynchronizationContext());
-
-
+			}
+			source = new CustomCellTableSource(cellGroups);
+			source.RowSelectedAction = RowSelected;
+			table.Source = source;
 
 			/*
 			for (int x = 0; x <= 1; x++) {
@@ -183,35 +201,8 @@ namespace Stext
 			
 		}
 
-		private Dictionary<string,string> getDirectoryServerTokenDictionary(List<string> e164numbers)
-		{
-			Dictionary<string,string> tokenDictionary = new Dictionary<string,string>(e164numbers.Count());
-			foreach (String number in e164numbers) {
-				try {
-					String tokenWithPadding = getDirectoryServerToken(number);
-					string token = tokenWithPadding.Substring(0, tokenWithPadding.Length - 2);
-					tokenDictionary.Add(token, number);
-				} catch (Exception e) {
-
-				}
-			}
-			return tokenDictionary;
-		}
-
-		private string getDirectoryServerToken(string e164number)
-		{
-			byte[] number = System.Text.Encoding.Default.GetBytes(e164number);
-			SHA1 sha1 = SHA1.Create();
-			byte[] hash = sha1.ComputeHash(number);
-			byte[] hash_10 = new byte[10];
-			Array.Copy(hash, hash_10, 10);
-
-			return Encoding.ASCII.GetString(Base64.Encode(hash_10));
-		}
-
 		private void ComposeAction()
 		{
-
 			try {
 
 				UIActionSheet actionSheet;
@@ -223,7 +214,7 @@ namespace Stext
 
 				actionSheet.Clicked += delegate(object a, UIButtonEventArgs b) {
 					if (b.ButtonIndex == (0)) {
-
+						this.appDelegate.GoToView(this.appDelegate.contactListView);
 					} else if (b.ButtonIndex == (1)) {
 							this.appDelegate.GoToView(this.appDelegate.newGroupView);
 						} 
