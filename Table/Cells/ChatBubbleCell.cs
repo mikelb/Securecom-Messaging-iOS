@@ -65,9 +65,10 @@ namespace Stext{
 
 			view.AddSubview (senderLabel);
 
-			icon = UIImage.FromFile ("Images/icons/lock_30.png");
+			icon = UIImage.FromFile("Images/lock_30.png");
 			var imgRect = new RectangleF (0, 0, 15, 15);
 			imgView = new UIImageView(icon);
+			imageView.Frame = imgRect;
 
 			view.AddSubview (imgView);
 
