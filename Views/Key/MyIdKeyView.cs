@@ -110,7 +110,7 @@ namespace Stext{
 			keysButton.Enabled = false;
 
 			chatsButton.Clicked += (sender, e) => {
-				this.appDelegate.GoToView(this.appDelegate.chatView);
+				this.appDelegate.GoToView(this.appDelegate.chatListView);
 			};
 
 			settingsButton.Clicked += (sender, e) => {

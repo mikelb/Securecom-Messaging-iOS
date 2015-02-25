@@ -11,7 +11,7 @@ using MonoTouch.CoreAnimation;
 
 namespace Stext{
 
-	public partial class ChatView : UIViewController{
+	public partial class ChatView : UIViewController, IncomingPushListener{
 
 
 		AppDelegate appDelegate;
@@ -41,11 +41,14 @@ namespace Stext{
 		protected int txtViewY = 0;
 		#endregion
 
+		public static string ThreadSelected;
+		public static int ThreadID;
+
 
 		public ChatView () : base ("ChatView", null){}
 
 
-		private void LoadTable(){
+		private void LoadTable(ChatBubbleCell _cell){
 
 			List<CustomCellGroup> cellGroups = new List<CustomCellGroup> ();
 			tableCellGroup = new CustomCellGroup ();
@@ -58,17 +61,23 @@ namespace Stext{
 				tableCellGroup.Cells.Add (cell);
 			}
 
-			//Pending
-			cell = new ChatBubbleCell(false);
-			cell.Update ("This is a pending cell", "8:00 PM");
-			cell.SetAsPending ();
-			tableCellGroup.Cells.Add (cell);
+			if(_cell != null){
+				tableCellGroup.Cells.Add (_cell);
+			}
 
-			//Undelivered
-			cell = new ChatBubbleCell(true);
-			cell.Update ("This is a undelivered cell", "8:05 PM");
-			cell.SetAsUndelivered ();
-			tableCellGroup.Cells.Add (cell);
+//			//Pending
+//			cell = new ChatBubbleCell(false);
+//			cell.Update ("This is a pending cell", "8:00 PM");
+//			cell.SetAsPending ();
+//			tableCellGroup.Cells.Add (cell);
+//
+//			//Undelivered
+//			cell = new ChatBubbleCell(true);
+//			cell.Update ("This is a undelivered cell", "8:05 PM");
+//			cell.SetAsUndelivered ();
+//			tableCellGroup.Cells.Add (cell);
+
+			SetTableSize();
 
 			source = new CustomCellTableSource(cellGroups);
 			source.RowSelectedAction = RowSelected;
@@ -83,6 +92,13 @@ namespace Stext{
 		
 		}
 
+		public void refreshChat(){
+			if (ThreadID != 0) {
+				table.ReloadData();
+				AddDataToConversation();
+				LoadTable(null);
+			}
+		}
 
 		private void InitExpandableTextView(){
 
@@ -242,32 +258,34 @@ namespace Stext{
 		private void SendMessage(){
 
 			DateTime now = DateTime.Now;
-			string format = "t";
+			string format = "ddd HH:mm tt";
 
-			messages.Add (accessoryTextView.Text);
-			timeStamps.Add(now.ToString("t"));
-			isLeft.Add(false);
+//			messages.Add (accessoryTextView.Text);
+//			timeStamps.Add(now.ToString("t"));
+//			isLeft.Add(false);
+
+			ChatBubbleCell cell = new ChatBubbleCell(false);
+			cell.Update (accessoryTextView.Text, now.ToString(format));
+			cell.SetAsPending ();
 
 			ResignFirstResponders ();
 			accessoryTextView.Text = "";
 			inputFakeMessage.Text = "Start Typing...";
 			
-			LoadTable();
+			LoadTable(cell);
 
-		}
-
-
-		private void SetupChat(){
-			if(appDelegate.contactListView.name != null){
-				this.Title = appDelegate.contactListView.name;
-			}
 		}
 
 
 		public override void ViewWillAppear (bool animated){
-			this.SetupChat ();
-			this.LoadTable ();
+			this.Title = ThreadSelected;
+			AddDataToConversation ();
+			this.LoadTable (null);
 			base.ViewWillAppear (animated);
+		}
+
+		public override void ViewWillDisappear (bool animated){
+			setThreadID(0);
 		}
 
 
@@ -313,6 +331,34 @@ namespace Stext{
 		}
 
 	
+		private void AddDataToConversation(){
+			messages = new List<string> ();
+			timeStamps = new List<string> ();
+			isLeft = new List<Boolean> ();
+			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+				// Check if there is an existing thread for this sender
+				List<PushMessage> pmList = conn.Query<PushMessage>("SELECT * FROM PushMessage WHERE Thread_id = ?", ThreadID);
+
+				Console.WriteLine("rkolli >>>>> @AddDataToConversation, ThreadID = "+ThreadID+", Message Count = "+pmList.Count());
+
+				foreach (PushMessage pm in pmList) {
+					Console.WriteLine("rkolli >>>>> @AddDataToConversation, message = "+pm.Message+", Sender = "+pm.Number+", Timestamp = "+pm.TimeStamp+", Time Sent = "+pm.TimeStamp_Sent+", Thread id = "+pm.Thread_id+", Service = "+pm.Service);
+					messages.Add (pm.Message);
+					DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(pm.TimeStamp/1000).ToLocalTime();
+
+					timeStamps.Add (""+epoch.ToString("ddd HH:mm tt"));
+					isLeft.Add(true);
+				}
+
+
+				conn.Execute("UPDATE PushChatThread Set Read = ? WHERE ID = ?", 0, ThreadID);
+				conn.Commit();
+				conn.Close();
+
+			}
+
+		}
+
 		private void AddTestData(){
 
 			messages = new List<string> ();
@@ -333,7 +379,6 @@ namespace Stext{
 
 			lockButton.Image = UIImage.FromFile ("Images/icons/lock@2x.png");
 
-			call.Layer.CornerRadius = btnCornerRadius;
 			edit.Layer.CornerRadius = btnCornerRadius;
 			info.Layer.CornerRadius = btnCornerRadius;
 
@@ -387,7 +432,8 @@ namespace Stext{
 				actionSheet = new UIActionSheet ();
 
 				actionSheet.AddButton ("Verify Identity");
-				actionSheet.AddButton ("End Secure Session");		
+				actionSheet.AddButton ("End Secure Session");
+				actionSheet.AddButton ("Cancel");
 
 				actionSheet.Clicked += delegate(object a, UIButtonEventArgs b) {
 					if (b.ButtonIndex == (0)) {
@@ -442,18 +488,19 @@ namespace Stext{
 
 		public override void ViewDidLoad (){
 
-			this.Title = "George Lund";
 			this.appDelegate = (AppDelegate)UIApplication.SharedApplication.Delegate;
 			NavigationItem.SetRightBarButtonItem (lockButton,false);
 			this.center = NSNotificationCenter.DefaultCenter;
 
 			EndEditing ();
 			SetupButtons ();
-			AddTestData ();
 
 			InitExpandableTextView ();
 			AddExpandableAccessoryView ();
 			SetExpandableTextViewSize ();
+
+			var g = new UITapGestureRecognizer(() => View.EndEditing(true));
+			View.AddGestureRecognizer(g);
 
 			center.AddObserver(
 				UIKeyboard.WillHideNotification, (notify) => { 
@@ -494,6 +541,14 @@ namespace Stext{
 			);	
 		}
 
+		public void setThreadSelected(string value){
+			ThreadSelected = value;
+		}
+
+
+		public void setThreadID(int value){
+			ThreadID = value;
+		}
 	}
 
 }

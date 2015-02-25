@@ -72,6 +72,9 @@ namespace Stext
 
 		public override void FinishedLaunching(UIApplication application)
 		{
+			UIAlertView _alert = new UIAlertView("@FinishedLaunching", "HERE", null, "Ok");
+			_alert.Show();
+
 			Window = new UIWindow(UIScreen.MainScreen.Bounds);
 			rootNavigationController = new UINavigationController();
 			alert = new Alert();
@@ -107,6 +110,8 @@ namespace Stext
 
 		private void RefreshChatListView(){
 			chatListView.PopulateTable();
+			chatView.refreshChat();
+
 		}
 
 		public void GoToView(UIViewController view)
@@ -400,7 +405,8 @@ namespace Stext
 					var pct_val = new PushChatThread{Number = sender, Recipient_id = 0, TimeStamp = Convert.ToInt64(messageid), Message_count = 1, Snippet = msg, Read = 1, Type = "Push"};
 					conn.Insert(pct_val);
 					present_thread_id = pct_val.ID;
-					Console.WriteLine("rkolli >>>>> @updateChatThread, inserting new chat row, present_thread_id = " + present_thread_id);
+					//conn.Execute("UPDATE PushChatThread Set Recipient_id = ? WHERE Number = ?", present_thread_id, sender);
+					Console.WriteLine("rkolli >>>>> @updateChatThread, inserting new chat row, present_thread_id = " +present_thread_id);
 				}
 				Console.WriteLine("rkolli >>>>> inserting message into the DB");
 

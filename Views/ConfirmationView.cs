@@ -190,6 +190,8 @@ namespace Stext
 							preference.LocalNumber = this.appDelegate.registrationView.PhPhoneNumberInput.Text;
 						});
 
+						Console.WriteLine("rkolli @ STATE_REGISTERING_WITH_SERVER");
+
 						// Do Directory sync
 						RefreshPushDirectory();
 						break;
@@ -213,7 +215,7 @@ namespace Stext
 
 				int counter = 0;
 				int contact_count = book.Count();
-				Console.WriteLine("Address book count = " + contact_count);
+				Console.WriteLine("rkolli >>>>> @RefreshPushDirectory, Address book count = " + contact_count);
 
 				foreach (Contact contact in book.OrderBy(c => c.LastName)) {
 					int idx = counter++;
