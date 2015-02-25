@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>Stext</string>
+	<string>Secure Messaging Application</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
@@ -34,6 +34,8 @@
 		<string>Icon-Small-40@2x.png</string>
 	</array>
 	<key>CFBundleIdentifier</key>
-	<string>com.securecomcode.messaging</string>
+	<string>com.unique.text</string>
+	<key>XSLaunchImageAssets</key>
+	<string>Resources/Images.xcassets/LaunchImage.launchimage</string>
 </dict>
 </plist>

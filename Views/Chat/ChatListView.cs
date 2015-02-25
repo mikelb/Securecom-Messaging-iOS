@@ -41,6 +41,8 @@ namespace Stext
 			base.ViewDidLoad();
 			this.appDelegate = (AppDelegate)UIApplication.SharedApplication.Delegate;
 
+			appDelegate.chatView.setThreadID(0);
+
 			ShowEditButton();
 
 			this.composeButton.Clicked += (sender, e) => {
@@ -64,17 +66,28 @@ namespace Stext
 				this.appDelegate.alert.showOkAlert("Mark All Read", "Marking all chat messages as read.");
 			};
 
+			settingsButton.Clicked += (sender, e) => {
+				this.appDelegate.GoToView(this.appDelegate.settingsView);
+			};
+
 		}
 
 
 		public void RowSelected(UITableView tableView, NSIndexPath indexPath)
 		{
 
-			ICustomCell selectedCell = source.CellGroups[indexPath.Section].Cells[indexPath.Row];
-
+			ChatCell selectedCell = (ChatCell) source.CellGroups[indexPath.Section].Cells[indexPath.Row];
+			appDelegate.chatView.setThreadSelected(selectedCell.GetHeader());
+			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+				conn.Execute("UPDATE PushChatThread Set Read = ? WHERE ID = ?", 0, selectedCell.GetThreadID());
+				conn.Commit();
+				conn.Close();
+			}
+			Console.WriteLine("rkolli >>>>> @RowSelected, ThreadID = "+selectedCell.GetThreadID());
+			appDelegate.chatView.setThreadID(selectedCell.GetThreadID());
 			appDelegate.GoToView(appDelegate.chatView);
-			UIAlertView alert = new UIAlertView("Chat index selected", ""+indexPath.Row, null, "Ok");
-			alert.Show();
+//			UIAlertView alert = new UIAlertView("Chat index selected", ""+indexPath.Row, null, "Ok");
+//			alert.Show();
 
 		}
 
@@ -103,7 +116,10 @@ namespace Stext
 
 		public void PopulateTable()
 		{
+			table.ReloadData();
+
 			List<PushChatThread> pm;
+
 
 			List<CustomCellGroup> cellGroups = new List<CustomCellGroup>();
 			tableCellGroup = new CustomCellGroup();
@@ -115,7 +131,7 @@ namespace Stext
 				pm = conn.Query<PushChatThread>("SELECT * FROM PushChatThread ORDER BY TimeStamp DESC");
 				int count = 0;
 				foreach (PushChatThread _m in pm) {
-					Console.WriteLine("Db APMessages, Number = " + _m.Number+", message id = "+_m.TimeStamp+", Message Body = "+_m.Snippet+", ID = "+_m.ID);
+					Console.WriteLine("Db APMessages, Number = " + _m.Number+", message id = "+_m.TimeStamp+", Message Body = "+_m.Snippet+", ID = "+_m.ID+", Read = "+_m.Read);
 //					List<ICustomCell> temp = tableCellGroup.Cells;
 //					foreach (ChatCell icc in temp) {
 //						Console.WriteLine("rkolli >>>>> Header = "+icc.GetHeader()+", message = "+_m.Snippet);
@@ -164,10 +180,15 @@ namespace Stext
 						ChatCell chatCell = ChatCell.Create();
 						chatCell.SetHeader(display_name);
 						chatCell.SetSubheading(_m.Snippet);
+						chatCell.SetThreadID(_m.ID);
 						DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(_m.TimeStamp/1000).ToLocalTime();
 						Console.WriteLine("rkolli >>>>> Time after format is "+epoch.ToString("HH:mm"));
 						chatCell.SetLabelTime("" + epoch.ToString("HH:mm"));
 						chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+						
+					if (_m.Read != 0) {
+						chatCell.BackgroundColor = UIColor.Green;
+					}
 //					if ((idx & 1) == 1)
 //						chatCell.MarkAsRead();
 						tableCellGroup.Cells.Insert(count, chatCell);
@@ -175,6 +196,8 @@ namespace Stext
 					//}
 
 				}
+				conn.Commit();
+				conn.Close();
 			}
 			source = new CustomCellTableSource(cellGroups);
 			source.RowSelectedAction = RowSelected;

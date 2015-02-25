@@ -12,6 +12,7 @@ namespace Stext{
 		public static readonly UINib Nib = UINib.FromName ("ChatCell", NSBundle.MainBundle);
 		public static readonly NSString Key = new NSString ("ChatCell");
 		public ChatCell (IntPtr handle) : base (handle){}
+		private int ThreadID;
 
 		public static ChatCell Create (){
 			return (ChatCell)Nib.Instantiate (null, null) [0];
@@ -24,6 +25,14 @@ namespace Stext{
 
 		public string GetHeader(){
 			return this.labelHeader.Text;
+		}
+
+		public void SetThreadID(int value){
+			this.ThreadID = value;
+		}
+
+		public int GetThreadID(){
+			return this.ThreadID;
 		}
 
 		public void SetSubheading(string subHeading){
