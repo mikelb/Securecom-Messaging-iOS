@@ -1,18 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 
-using Org.BouncyCastle.Crypto;
-
 using Securecom.Messaging;
-using Securecom.Messaging.ecc;
 using Securecom.Messaging.Entities;
-using Securecom.Messaging.Net;
-using Securecom.Messaging.Spec;
 using Securecom.Messaging.Utils;
-using System.Collections.Generic;
 
 namespace Stext
 {
@@ -94,6 +89,7 @@ namespace Stext
 			} else {
 				UIApplication.SharedApplication.RegisterForRemoteNotificationTypes(UIRemoteNotificationType.Alert | UIRemoteNotificationType.Badge | UIRemoteNotificationType.Sound);
 			}
+			//MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage("hello again", "a@b.com"));
 		}
 
 		public void SetNavigationProperties()
@@ -223,6 +219,12 @@ namespace Stext
 					String payload = m.ToString();
 					String msg = ProcessIncomingMessage(payload);
 					updateChatThread(payload, msg);
+					MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage("hello", "a@b.com"));//"sean@ftlnetworks.ca"));
+
+					//String result = Utils.FromBytes(MessageManager..ProcessIncomingMessage(msg));
+					//Console.WriteLine("result is " + result);
+					//return result;
+
 					//GregTest ( payload);
 					//UIAlertView alert = new UIAlertView("New message", payload, null, "Ok");
 					//alert.Show();
