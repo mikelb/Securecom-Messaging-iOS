@@ -193,7 +193,7 @@ namespace Stext
 
 		public static String ProcessIncomingMessage(String msg)
 		{
-			String result = Utils.FromBytes(MessageManager.ProcessIncomingMessage(msg));
+			String result = MessageManager.ProcessIncomingMessage(msg);
 			Console.WriteLine("result is " + result);
 			return result;
 		}
@@ -220,7 +220,8 @@ namespace Stext
 					String msg = ProcessIncomingMessage(payload);
 					updateChatThread(payload, msg);
 					MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage("hello", "a@b.com"));//"sean@ftlnetworks.ca"));
-
+					MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage("we're here", "a@b.com"));//"sean@ftlnetworks.ca"));
+					MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage("how are you?", "a@b.com"));//"sean@ftlnetworks.ca"));
 					//String result = Utils.FromBytes(MessageManager..ProcessIncomingMessage(msg));
 					//Console.WriteLine("result is " + result);
 					//return result;
