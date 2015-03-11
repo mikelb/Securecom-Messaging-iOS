@@ -34,7 +34,6 @@ namespace Stext
 		{
 		}
 
-
 		public override void ViewDidLoad()
 		{
 			Console.WriteLine("rkolli >>>>> @HERE1");
@@ -85,11 +84,14 @@ namespace Stext
 			}
 			Console.WriteLine("rkolli >>>>> @RowSelected, ThreadID = "+selectedCell.GetThreadID());
 			appDelegate.chatView.setThreadID(selectedCell.GetThreadID());
+			appDelegate.chatView.setNumber(selectedCell.GetNumber());
 			appDelegate.GoToView(appDelegate.chatView);
 //			UIAlertView alert = new UIAlertView("Chat index selected", ""+indexPath.Row, null, "Ok");
 //			alert.Show();
 
 		}
+
+
 
 
 		private void ShowDoneButton()
@@ -102,7 +104,16 @@ namespace Stext
 
 		private void ShowEditButton()
 		{
-			NavigationItem.SetLeftBarButtonItem(editButton, false);
+			List<PushChatThread> pctList;
+			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+				pctList = conn.Query<PushChatThread>("select * from PushChatThread");
+			}
+			if(pctList.Count <= 0){
+				NavigationItem.SetLeftBarButtonItem(null, false);
+				NavigationItem.SetHidesBackButton(true, true);
+			}else{
+				NavigationItem.SetLeftBarButtonItem(editButton, false);
+			}
 			NavigationItem.SetRightBarButtonItem(composeButton, false);
 			this.table.SetEditing(false, true);
 		}
@@ -119,7 +130,7 @@ namespace Stext
 			table.ReloadData();
 
 			List<PushChatThread> pm;
-
+			UIImage thumbnail = null;
 
 			List<CustomCellGroup> cellGroups = new List<CustomCellGroup>();
 			tableCellGroup = new CustomCellGroup();
@@ -160,6 +171,7 @@ namespace Stext
 							foreach (Phone p in c.Phones) {
 								if (_m.Number.Equals(p.Number)) {
 									display_name = c.DisplayName;
+									thumbnail = c.GetThumbnail();
 								}
 								break;
 							}
@@ -169,6 +181,7 @@ namespace Stext
 							foreach (Email e in c.Emails) {
 								if (_m.Number.Equals(e.Address)) {
 									display_name = c.DisplayName;
+									thumbnail = c.GetThumbnail();
 								}
 								break;
 							}
@@ -181,7 +194,9 @@ namespace Stext
 						chatCell.SetHeader(display_name);
 						chatCell.SetSubheading(_m.Snippet);
 						chatCell.SetThreadID(_m.ID);
-						DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(_m.TimeStamp/1000).ToLocalTime();
+						chatCell.SetNumber(_m.Number);
+						chatCell.SetAvatar(thumbnail);
+					        DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(_m.TimeStamp/1000).ToLocalTime();
 						Console.WriteLine("rkolli >>>>> Time after format is "+epoch.ToString("HH:mm"));
 						chatCell.SetLabelTime("" + epoch.ToString("HH:mm"));
 						chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
@@ -201,7 +216,11 @@ namespace Stext
 			}
 			source = new CustomCellTableSource(cellGroups);
 			source.RowSelectedAction = RowSelected;
+			source.DeleteAction = DeleteSelected;
+			source.DeleteTitle = "Delete";
 			table.Source = source;
+
+			ShowEditButton();
 
 			/*
 			for (int x = 0; x <= 1; x++) {
@@ -224,6 +243,24 @@ namespace Stext
 			
 		}
 
+		public void DeleteSelected(UITableView tableView, NSIndexPath indexPath){
+			ChatCell selectedCell = (ChatCell) source.CellGroups[indexPath.Section].Cells[indexPath.Row];
+			Console.WriteLine("rkolli >>>>> @RowSelected to DELETE, ThreadID = "+selectedCell.GetThreadID());
+			try{
+				using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+					conn.Execute("DELETE FROM PushChatThread WHERE ID = ?", selectedCell.GetThreadID());
+					conn.Execute("DELETE FROM PushMessage WHERE Thread_id = ?", selectedCell.GetThreadID());
+					conn.Commit();
+					conn.Close();
+				}
+			}catch(Exception e){
+				Console.WriteLine("Error while deleting thread "+e.Message);
+			}
+			ShowEditButton();
+			UIAlertView alert = new UIAlertView("Deleted", ""+indexPath.Row, null, "Ok");
+			alert.Show();
+		}
+
 		private void ComposeAction()
 		{
 			try {
@@ -232,15 +269,16 @@ namespace Stext
 				actionSheet = new UIActionSheet();
 
 				actionSheet.AddButton("New Chat");
-				actionSheet.AddButton("New Group");		
+				//actionSheet.AddButton("New Group");		
 				actionSheet.AddButton("Cancel");		
 
 				actionSheet.Clicked += delegate(object a, UIButtonEventArgs b) {
 					if (b.ButtonIndex == (0)) {
 						this.appDelegate.GoToView(this.appDelegate.contactListView);
-					} else if (b.ButtonIndex == (1)) {
-							this.appDelegate.GoToView(this.appDelegate.newGroupView);
-						} 
+					}
+//					} else if (b.ButtonIndex == (1)) {
+//							this.appDelegate.GoToView(this.appDelegate.newGroupView);
+//						} 
 				};
 				actionSheet.ShowInView(View);
 			} catch (Exception ex) {
