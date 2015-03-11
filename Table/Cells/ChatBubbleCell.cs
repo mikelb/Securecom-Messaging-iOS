@@ -23,6 +23,7 @@ namespace Stext{
 		UIFont font;
 		UIButton undelivered;
 		bool isLeft;
+		long MessageID;
 
 		static ChatBubbleCell (){
 			bright = UIImage.FromFile ("Images/Chat/chat-bubble-right@2x.png");
@@ -90,6 +91,14 @@ namespace Stext{
 
 		public void SetAsPending(){
 			this.imageView.Alpha = 0.5f;
+		}
+
+		public void SetMessageID(long value){
+			this.MessageID = value;
+		}
+
+		public long getMessageID(){
+			return this.MessageID;
 		}
 
 		public override void LayoutSubviews (){

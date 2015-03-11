@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using MonoTouch.Dialog;
 using MonoTouch.CoreAnimation;
+using Securecom.Messaging;
+using System.Threading;
 
 namespace Stext{
 
@@ -21,6 +23,7 @@ namespace Stext{
 		private UIBarButtonItem backButton = null;
 
 		private List<string> messages;
+		private List<long> message_ids;
 		private List<string> timeStamps;
 		private List<Boolean> isLeft;
 		private float btnCornerRadius = 5.0f;
@@ -42,10 +45,13 @@ namespace Stext{
 		#endregion
 
 		public static string ThreadSelected;
+		public static string Number;
 		public static int ThreadID;
+		public static float TableRowHeight = 0;
 
 
-		public ChatView () : base ("ChatView", null){}
+		public ChatView () : base ("ChatView", null){
+		}
 
 
 		private void LoadTable(ChatBubbleCell _cell){
@@ -55,9 +61,11 @@ namespace Stext{
 			cellGroups.Add (tableCellGroup);
 
 			ChatBubbleCell cell;
+			Console.WriteLine("rkolli >>>>> @LoadTable"+", messages.Count = "+messages.Count);
 			for(int x = 0 ; x < messages.Count ; x++){
 				cell = new ChatBubbleCell(isLeft[x]);
 				cell.Update (messages[x], timeStamps[x]);
+				cell.SetMessageID(message_ids[x]);
 				tableCellGroup.Cells.Add (cell);
 			}
 
@@ -81,10 +89,30 @@ namespace Stext{
 
 			source = new CustomCellTableSource(cellGroups);
 			source.RowSelectedAction = RowSelected;
+			source.DeleteAction = DeleteSelected;
+			source.DeleteTitle = "Delete";
 			table.Source = source;
-
 		}
 
+
+		public void DeleteSelected(UITableView tableView, NSIndexPath indexPath){
+			ChatBubbleCell selectedCell = (ChatBubbleCell) source.CellGroups[indexPath.Section].Cells[indexPath.Row];
+			Console.WriteLine("rkolli >>>>> ChatView @DeleteSelected to DELETE, Message ID = "+selectedCell.getMessageID());
+			try{
+				lock(this){
+					 using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+						conn.Execute("DELETE FROM PushMessage WHERE TimeStamp = ?", selectedCell.getMessageID());
+						conn.Commit();
+						conn.Close();
+						ViewWillAppear (true);
+					}
+				}
+			}catch(Exception e){
+				Console.WriteLine("Error while deleting thread "+e.Message);
+			}
+			UIAlertView alert = new UIAlertView("Deleted", ""+indexPath.Row, null, "Ok");
+			alert.Show();
+		}
 
 		public void RowSelected(UITableView tableView, NSIndexPath indexPath){
 
@@ -267,13 +295,45 @@ namespace Stext{
 			ChatBubbleCell cell = new ChatBubbleCell(false);
 			cell.Update (accessoryTextView.Text, now.ToString(format));
 			cell.SetAsPending ();
+			LoadTable(cell);
+
+//			ThreadStart childref = new ThreadStart(SendMessageThread);
+//			Thread childThread = new Thread(childref);
+//			childThread.Start();
+
+			TableRowHeight = cell.getHeight();
+
+			InvokeOnMainThread(delegate {
+				SendMessageThread();
+			});
+
+			//cell.SetAsSent();
 
 			ResignFirstResponders ();
 			accessoryTextView.Text = "";
 			inputFakeMessage.Text = "Start Typing...";
 			
-			LoadTable(cell);
+			LoadTable(null);
 
+		}
+
+		private void SendMessageThread(){
+			try{
+				MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage(accessoryTextView.Text, Number));
+				using (var conn= new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase))
+				{
+					var pmessage = new PushMessage{Thread_id = ThreadID, Number = Number, TimeStamp = AppDelegate.CurrentTimeMillis(), TimeStamp_Sent = Convert.ToInt64(AppDelegate.CurrentTimeMillis()), Read = 0, Message = accessoryTextView.Text, Service = "PushLocal"};
+					conn.Insert(pmessage);
+					conn.Commit();
+					conn.Close();
+				}
+				PointF pf = new PointF (0f, (messages.Count - 1) * TableRowHeight - table.Bounds.Size.Height);
+				table.SetContentOffset(pf, true);
+
+				AddDataToConversation();
+			}catch(Exception e){
+				Console.WriteLine("Exception while sending message...."+e.Message);
+			}
 		}
 
 
@@ -326,7 +386,6 @@ namespace Stext{
 			} else {
 				tableFrame.Height = chatView.Frame.Height - (keyboardHeight + tablePadding);
 			}
-
 			table.Frame = tableFrame;
 		}
 
@@ -335,6 +394,7 @@ namespace Stext{
 			messages = new List<string> ();
 			timeStamps = new List<string> ();
 			isLeft = new List<Boolean> ();
+			message_ids = new List<long>();
 			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
 				// Check if there is an existing thread for this sender
 				List<PushMessage> pmList = conn.Query<PushMessage>("SELECT * FROM PushMessage WHERE Thread_id = ?", ThreadID);
@@ -347,13 +407,20 @@ namespace Stext{
 					DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(pm.TimeStamp/1000).ToLocalTime();
 
 					timeStamps.Add (""+epoch.ToString("ddd HH:mm tt"));
-					isLeft.Add(true);
+					message_ids.Add(pm.TimeStamp);
+					if (pm.Service != "PushLocal") {
+						isLeft.Add(true);
+					} else {
+						isLeft.Add(false);
+					}
 				}
 
 
 				conn.Execute("UPDATE PushChatThread Set Read = ? WHERE ID = ?", 0, ThreadID);
 				conn.Commit();
 				conn.Close();
+
+
 
 			}
 
@@ -379,9 +446,6 @@ namespace Stext{
 
 			lockButton.Image = UIImage.FromFile ("Images/icons/lock@2x.png");
 
-			edit.Layer.CornerRadius = btnCornerRadius;
-			info.Layer.CornerRadius = btnCornerRadius;
-
 			lockButton.Clicked += (sender, e) => {
 				LockAction();
 			};
@@ -390,10 +454,10 @@ namespace Stext{
 				AddPhoto();
 			};
 
-			edit.TouchUpInside += (sender, e) => {
-				DismissKeyboard ();
-				StartEditing();
-			};
+//			edit.TouchUpInside += (sender, e) => {
+//				DismissKeyboard ();
+//				StartEditing();
+//			};
 
 			cancel.Clicked += (sender, e) => {
 				DismissKeyboard ();
@@ -452,8 +516,10 @@ namespace Stext{
 		public void EndEditing(){
 
 			editToolbar.Hidden = true;
-			trash.Enabled = false;
 			table.SetEditing(false,true);
+
+			if(source != null)
+				source.DidFinishTableEditing(table);
 
 			if (backButton != null) {
 				NavigationItem.SetLeftBarButtonItem (backButton, false);
@@ -468,7 +534,13 @@ namespace Stext{
 		public void StartEditing(){
 
 			editToolbar.Hidden = false;
-			trash.Enabled = true;
+			if (table.Editing) {
+				table.SetEditing(false,true);
+			}
+
+//			if(source != null)
+//				source.WillBeginTableEditing(table);
+
 			table.SetEditing(true,true);
 
 			if (NavigationController.NavigationBar.BackItem != null) {
@@ -548,6 +620,10 @@ namespace Stext{
 
 		public void setThreadID(int value){
 			ThreadID = value;
+		}
+
+		public void setNumber(string value){
+			Number = value;
 		}
 	}
 
