@@ -67,9 +67,6 @@ namespace Stext
 
 		public override void FinishedLaunching(UIApplication application)
 		{
-			UIAlertView _alert = new UIAlertView("@FinishedLaunching", "HERE", null, "Ok");
-			_alert.Show();
-
 			Window = new UIWindow(UIScreen.MainScreen.Bounds);
 			rootNavigationController = new UINavigationController();
 			alert = new Alert();
@@ -211,24 +208,12 @@ namespace Stext
 			UIApplicationState state = UIApplication.SharedApplication.ApplicationState;
 			NSDictionary aps = options.ObjectForKey(new NSString("aps")) as NSDictionary;
            
-			//String alert = (aps[new NSString("alert")] as NSString).ToString();
-			//String payload = (aps[new NSString("m")] as NSString).ToString();
 			if (options.ContainsKey(new NSString("m"))) {
 				NSString m = options.ObjectForKey(new NSString("m")) as NSString;
 				try { //do something with the message
 					String payload = m.ToString();
 					String msg = ProcessIncomingMessage(payload);
 					updateChatThread(payload, msg);
-					MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage("hello", "a@b.com"));//"sean@ftlnetworks.ca"));
-					MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage("we're here", "a@b.com"));//"sean@ftlnetworks.ca"));
-					MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage("how are you?", "a@b.com"));//"sean@ftlnetworks.ca"));
-					//String result = Utils.FromBytes(MessageManager..ProcessIncomingMessage(msg));
-					//Console.WriteLine("result is " + result);
-					//return result;
-
-					//GregTest ( payload);
-					//UIAlertView alert = new UIAlertView("New message", payload, null, "Ok");
-					//alert.Show();
 				} catch (Exception e) {
 					Console.WriteLine("exception: " + e.Message);
 					Console.WriteLine("stack trace: " + e.StackTrace);
@@ -296,7 +281,7 @@ namespace Stext
 				conn.Close();
 			}
 			RefreshChatListView();
-			UIAlertView alert = new UIAlertView("New Whisper Message ", msg, null, "Ok");
+			UIAlertView alert = new UIAlertView("New Securecom Message ", msg, null, "Ok");
 			alert.Show();
 		}
 
