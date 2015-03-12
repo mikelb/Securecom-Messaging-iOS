@@ -67,6 +67,7 @@ namespace Stext
 
 		public override void FinishedLaunching(UIApplication application)
 		{
+			Console.WriteLine("rkolli >>>>> @FinishedLaunching");
 			Window = new UIWindow(UIScreen.MainScreen.Bounds);
 			rootNavigationController = new UINavigationController();
 			alert = new Alert();
@@ -183,6 +184,7 @@ namespace Stext
 		/// <param name="userInfo">User info.</param>
 		public override void ReceivedRemoteNotification(UIApplication application, NSDictionary userInfo)
 		{
+			Console.WriteLine("rkolli >>>>> @ReceivedRemoteNotification");
 			if (userInfo != null) {
 				ProcessNotification(userInfo, false);
 			}
@@ -202,6 +204,8 @@ namespace Stext
 		/// <param name="fromFinishedLaunching">If set to <c>true</c> from finished launching.</param>
 		public void ProcessNotification(NSDictionary options, bool fromFinishedLaunching)
 		{
+			Console.WriteLine("rkolli >>>>> @ProcessNotification");
+
 			if (!options.ContainsKey(new NSString("aps")))
 				return;
 
@@ -234,6 +238,7 @@ namespace Stext
 		}
 
 		private void updateChatThread(string payload, string msg){
+			Console.WriteLine("rkolli >>>>> @updateChatThread, payload = "+payload);
 			const string sender_pattern = "\"sender\":\"";
 			const string messageid_pattern = "\"messageId\":";
 			int a = payload.IndexOf(sender_pattern) + sender_pattern.Length;
@@ -281,8 +286,8 @@ namespace Stext
 				conn.Close();
 			}
 			RefreshChatListView();
-			UIAlertView alert = new UIAlertView("New Securecom Message ", msg, null, "Ok");
-			alert.Show();
+//			UIAlertView alert = new UIAlertView("New Securecom Message ", msg, null, "Ok");
+//			alert.Show();
 		}
 
 		public static long CurrentTimeMillis()
