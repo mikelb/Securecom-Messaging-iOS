@@ -34,9 +34,6 @@ namespace Stext
 		MonoTouch.UIKit.UIBarButtonItem deleteAllButton { get; set; }
 
 		[Outlet]
-		MonoTouch.UIKit.UIButton edit { get; set; }
-
-		[Outlet]
 		MonoTouch.UIKit.UIToolbar editToolbar { get; set; }
 
 		[Outlet]
@@ -44,9 +41,6 @@ namespace Stext
 
 		[Outlet]
 		MonoTouch.UIKit.UILabel headerLabel { get; set; }
-
-		[Outlet]
-		MonoTouch.UIKit.UIButton info { get; set; }
 
 		[Outlet]
 		MonoTouch.UIKit.UITextField inputFakeMessage { get; set; }
@@ -69,9 +63,6 @@ namespace Stext
 		[Outlet]
 		MonoTouch.UIKit.UISegmentedControl topButtons { get; set; }
 
-		[Outlet]
-		MonoTouch.UIKit.UIBarButtonItem trash { get; set; }
-		
 		void ReleaseDesignerOutlets ()
 		{
 			if (accessoryCreateButton != null) {
@@ -104,10 +95,10 @@ namespace Stext
 				chatView = null;
 			}
 
-			if (edit != null) {
-				edit.Dispose ();
-				edit = null;
-			}
+//			if (edit != null) {
+//				edit.Dispose ();
+//				edit = null;
+//			}
 
 			if (editToolbar != null) {
 				editToolbar.Dispose ();
@@ -124,10 +115,10 @@ namespace Stext
 				headerLabel = null;
 			}
 
-			if (info != null) {
-				info.Dispose ();
-				info = null;
-			}
+//			if (info != null) {
+//				info.Dispose ();
+//				info = null;
+//			}
 
 			if (inputFakeMessage != null) {
 				inputFakeMessage.Dispose ();
@@ -162,11 +153,6 @@ namespace Stext
 			if (topButtons != null) {
 				topButtons.Dispose ();
 				topButtons = null;
-			}
-
-			if (trash != null) {
-				trash.Dispose ();
-				trash = null;
 			}
 
 			if (deleteAllButton != null) {

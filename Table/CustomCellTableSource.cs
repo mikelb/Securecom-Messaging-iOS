@@ -68,6 +68,8 @@ namespace Stext
 		#region -= user interaction methods =-
 
 		public override void RowSelected (UITableView tableView, NSIndexPath indexPath){
+			tableView.DeselectRow(indexPath, true);
+			Console.WriteLine("rkolli >>>>> @RowSelected");
 			if (RowSelectedAction != null) {
 				RowSelectedAction (tableView, indexPath);
 			}
@@ -119,11 +121,13 @@ namespace Stext
 		#region -= editing methods =-
 			
 		public override bool CanEditRow (UITableView tableView, NSIndexPath indexPath){
+			Console.WriteLine("rkolli >>>>> @CanEditRow, row = "+indexPath.Row);
 			ICustomCell cell = cellGroups[indexPath.Section].Cells[indexPath.Row];
 			return cell.canDelete;
 		}
 
 		public override bool CanMoveRow (UITableView tableView, NSIndexPath indexPath){
+			Console.WriteLine("rkolli >>>>> @CanMoveRow, row = "+indexPath.Row);
 			//ICustomCell cell = cellGroups[indexPath.Section].Cells[indexPath.Row];
 			//return cell.canMove;
 			return false;
@@ -133,7 +137,7 @@ namespace Stext
 		/// called by the table view when a row is moved.
 		/// </summary>
 		public override void MoveRow (UITableView tableView, NSIndexPath sourceIndexPath, NSIndexPath destinationIndexPath){
-
+			Console.WriteLine("rkolli >>>>> @MoveRow");
 			var item = CellGroups [sourceIndexPath.Section].Cells [sourceIndexPath.Row];
 			CellGroups[sourceIndexPath.Section].Cells.RemoveAt(sourceIndexPath.Row);
 			CellGroups[destinationIndexPath.Section].Cells.Insert(destinationIndexPath.Row , item);
@@ -146,16 +150,21 @@ namespace Stext
 		/// </summary>
 		public void WillBeginTableEditing (UITableView tableView)
 		{
+			Console.WriteLine("rkolli >>>>> @WillBeginTableEditing");
 			//---- start animations
 			tableView.BeginUpdates ();
 
 			//---- insert a new row in the table
-			tableView.InsertRows (new NSIndexPath[] { NSIndexPath.FromRowSection (1, 1) }, UITableViewRowAnimation.Fade);
+			tableView.InsertRows (new NSIndexPath[] { NSIndexPath.FromRowSection (tableView.NumberOfRowsInSection (0), 0) }, UITableViewRowAnimation.Fade);
 		
 			//---- end animations
 			tableView.EndUpdates ();
 		}
 
+		public void DidFinishTableEditing (UITableView tableView)
+		{
+			Console.WriteLine("rkolli >>>>> @DidFinishTableEditing");
+		}
 
 		public override bool ShouldIndentWhileEditing (UITableView tableView, NSIndexPath indexPath){
 
@@ -168,9 +177,8 @@ namespace Stext
 
 
 		public override UITableViewCellEditingStyle EditingStyleForRow (UITableView tableView, NSIndexPath indexPath){
-
 			ICustomCell cell = CellGroups [indexPath.Section].Cells [indexPath.Row];
-
+			Console.WriteLine("rkolli >>>>>. @EditingStyleForRow DELETE, indexPath.Row = "+indexPath.Row+", cell.AllowsDelete = "+cell.AllowsDelete ());
 			if (cell.AllowsDelete ()) {
 				return UITableViewCellEditingStyle.Delete;
 			} else {
@@ -181,11 +189,11 @@ namespace Stext
 		public override string TitleForDeleteConfirmation (UITableView tableView, NSIndexPath indexPath){
 			return DeleteTitle;
 		}
-
 		public override void CommitEditingStyle (UITableView tableView, UITableViewCellEditingStyle editingStyle, MonoTouch.Foundation.NSIndexPath indexPath){
-
+			Console.WriteLine("rkolli >>>>>. @CommitEditingStyle DELETE, editingStyle = "+editingStyle);
 			switch (editingStyle){
 				case UITableViewCellEditingStyle.Delete:
+				Console.WriteLine("rkolli >>>>>. @CommitEditingStyle UITableViewCellEditingStyle.Delete");
 					if (DeleteAction != null) {
 						try{
 							ICustomCell cell = CellGroups [indexPath.Section].Cells [indexPath.Row];

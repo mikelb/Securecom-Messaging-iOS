@@ -1,0 +1,15 @@
+
+*.pidb
+*.userprefs
+*.swp
+*.DS_Store
+*.nib
+*.suo
+*.user
+*.pfx
+
+**/bin/
+**/obj/*
+*_ReSharper.*/
+
+**/Resource.designer.cs

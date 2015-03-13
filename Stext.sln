@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stext", "Stext.csproj", "{EDF1A946-3868-4126-9C04-9DF7B60D97CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Securecom.Messaging.Spec", "..\Securecom-Messaging-CSharp\Securecom-Messageing-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj", "{70BF2276-52DD-4427-B96B-8A4FDE745015}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Securecom.Messaging.Spec", "Securecom-Messaging-CSharp\Securecom-Messageing-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj", "{70BF2276-52DD-4427-B96B-8A4FDE745015}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Securecom.Messaging.Net", "..\Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\Securecom.Messaging.Net.csproj", "{2CC5830D-F86D-49A8-84F3-2E575ECB203A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Securecom.Messaging.Net", "Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\Securecom.Messaging.Net.csproj", "{2CC5830D-F86D-49A8-84F3-2E575ECB203A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -120,9 +120,6 @@ Global
 		{EDF1A946-3868-4126-9C04-9DF7B60D97CA}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 		{EDF1A946-3868-4126-9C04-9DF7B60D97CA}.Release|Mixed Platforms.ActiveCfg = Release|iPhoneSimulator
 		{EDF1A946-3868-4126-9C04-9DF7B60D97CA}.Release|Mixed Platforms.Build.0 = Release|iPhoneSimulator
-	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Stext.csproj
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

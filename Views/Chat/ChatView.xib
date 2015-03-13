@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="5056" systemVersion="13D65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6254" systemVersion="14C1510" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ChatView">
@@ -9,15 +9,11 @@
                 <outlet property="accessoryCreateButton" destination="z47-Ic-8DU" id="bQ9-Jg-duX"/>
                 <outlet property="accessoryTextView" destination="IOO-Jf-ijd" id="jXv-zr-8uE"/>
                 <outlet property="accessoryToolbar" destination="OjF-d9-Qpr" id="YtF-46-7nm"/>
-                <outlet property="call" destination="D5R-ci-R3F" id="jdh-8M-tKo"/>
                 <outlet property="cancel" destination="FBw-Mh-7qD" id="ONF-BL-baC"/>
                 <outlet property="chatView" destination="iN0-l3-epB" id="JTU-N7-Q9j"/>
                 <outlet property="deleteAllButton" destination="pDz-WL-G8q" id="dtb-XU-DBx"/>
-                <outlet property="edit" destination="XgU-0S-VQQ" id="9e3-Lx-PE2"/>
                 <outlet property="editToolbar" destination="9oW-Jd-wN1" id="7k5-fc-VIO"/>
                 <outlet property="fakePhotoButton" destination="rnL-xZ-jEY" id="0Da-nP-vt0"/>
-                <outlet property="headerLabel" destination="qcK-Xo-GV3" id="mZD-3O-lOv"/>
-                <outlet property="info" destination="P6w-Tb-TX6" id="z1m-kQ-zd9"/>
                 <outlet property="inputFakeMessage" destination="SCi-vQ-ylZ" id="vVF-HT-ab6"/>
                 <outlet property="lockButton" destination="0JO-qC-Bey" id="ZOj-bW-Dd5"/>
                 <outlet property="photoButton" destination="AAu-jD-9Mk" id="asi-hD-5R0"/>
@@ -25,7 +21,6 @@
                 <outlet property="textMessage" destination="Gsi-5f-8Cr" id="hoA-wL-anw"/>
                 <outlet property="toolbarFakeMessage" destination="WwN-Gc-Lyq" id="lx9-k7-D9p"/>
                 <outlet property="topButtons" destination="iEy-7q-EDV" id="3W4-Zg-GaX"/>
-                <outlet property="trash" destination="eRg-Tz-j3T" id="nJM-j8-RlT"/>
                 <outlet property="view" destination="iN0-l3-epB" id="kCW-yf-GMq"/>
             </connections>
         </placeholder>
@@ -42,11 +37,6 @@
                     <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     <color key="sectionIndexTrackingBackgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                 </tableView>
-                <view contentMode="scaleToFill" id="NDP-yh-nom">
-                    <rect key="frame" x="0.0" y="0.0" width="320" height="130"/>
-                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                </view>
                 <toolbar opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="WwN-Gc-Lyq">
                     <rect key="frame" x="0.0" y="524" width="320" height="44"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
@@ -74,48 +64,12 @@
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <items>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="998-WJ-abS"/>
-                        <barButtonItem systemItem="trash" id="eRg-Tz-j3T">
-                            <color key="tintColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
-                        </barButtonItem>
                     </items>
                     <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                 </toolbar>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="D5R-ci-R3F">
-                    <rect key="frame" x="11" y="69" width="93" height="30"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <color key="backgroundColor" red="0.85098039219999999" green="0.85098039219999999" blue="0.85098039219999999" alpha="1" colorSpace="calibratedRGB"/>
-                    <state key="normal" title="Call">
-                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                    </state>
-                </button>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="XgU-0S-VQQ">
-                    <rect key="frame" x="114" y="69" width="93" height="30"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <color key="backgroundColor" red="0.85098039219999999" green="0.85098039219999999" blue="0.85098039219999999" alpha="1" colorSpace="calibratedRGB"/>
-                    <state key="normal" title="Edit">
-                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                    </state>
-                </button>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="P6w-Tb-TX6">
-                    <rect key="frame" x="217" y="69" width="93" height="30"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <color key="backgroundColor" red="0.85098039219999999" green="0.85098039219999999" blue="0.85098039219999999" alpha="1" colorSpace="calibratedRGB"/>
-                    <state key="normal" title="Info">
-                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                    </state>
-                </button>
-                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Thursday" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="qcK-Xo-GV3">
-                    <rect key="frame" x="11" y="104" width="299" height="21"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                    <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                    <nil key="highlightedColor"/>
-                </label>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-            <simulatedStatusBarMetrics key="simulatedStatusBarMetrics"/>
             <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" barStyle="black" prompted="NO"/>
-            <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
         </view>
         <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="OjF-d9-Qpr" userLabel="AccessoryToolbar">
             <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
@@ -127,6 +81,7 @@
             <rect key="frame" x="0.0" y="0.0" width="270" height="44"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <color key="backgroundColor" cocoaTouchSystemColor="tableCellGroupedBackgroundColor"/>
+            <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
             <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="yes"/>
@@ -155,6 +110,7 @@
                 </toolbar>
             </subviews>
             <color key="backgroundColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
+            <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
         </view>
         <barButtonItem systemItem="camera" id="rnL-xZ-jEY">
@@ -191,4 +147,9 @@
             <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
         </barButtonItem>
     </objects>
+    <simulatedMetricsContainer key="defaultSimulatedMetrics">
+        <simulatedStatusBarMetrics key="statusBar"/>
+        <simulatedOrientationMetrics key="orientation"/>
+        <simulatedScreenMetrics key="destination" type="retina4"/>
+    </simulatedMetricsContainer>
 </document>
