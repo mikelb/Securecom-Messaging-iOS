@@ -46,9 +46,6 @@ namespace Stext
 		MonoTouch.UIKit.UIButton PhRegister { get; set; }
 
 		[Outlet]
-		MonoTouch.UIKit.UIButton PhSkip { get; set; }
-
-		[Outlet]
 		MonoTouch.UIKit.UILabel processingBottomLabel { get; set; }
 
 		[Outlet]
@@ -124,11 +121,6 @@ namespace Stext
 			if (PhRegister != null) {
 				PhRegister.Dispose ();
 				PhRegister = null;
-			}
-
-			if (PhSkip != null) {
-				PhSkip.Dispose ();
-				PhSkip = null;
 			}
 
 			if (processingLabel != null) {

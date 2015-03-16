@@ -11,35 +11,41 @@ namespace Stext{
 
 		public static NSString KeyLeft = new NSString ("BubbleElementLeft");
 		public static NSString KeyRight = new NSString ("BubbleElementRight");
-		public static UIImage bleft, bright, left, right, icon; 
+		public static UIImage bleft, bright, left, right, icon, sendfalied; 
 		public static UIFont infoFont = UIFont.SystemFontOfSize(12);
 
 		UIView view;
 		UIView imageView;
+		UIView attachment;
 		UIView undeliveredView;
 		UIView imgView;
 		UILabel label;
 		UILabel senderLabel;
 		UIFont font;
-		UIButton undelivered;
+		public UIButton undelivered;
 		bool isLeft;
 		long MessageID;
 
 		static ChatBubbleCell (){
 			bright = UIImage.FromFile ("Images/Chat/chat-bubble-right@2x.png");
 			bleft = UIImage.FromFile ("Images/Chat/chat-bubble-left@2x.png");
+			sendfalied = UIImage.FromFile("Images/Chat/chat-bubble-undelivered.png").CreateResizableImage(new UIEdgeInsets(11, 11, 17, 18));
 			left = bleft.CreateResizableImage (new UIEdgeInsets (10, 16, 18, 26));
 			right = bright.CreateResizableImage (new UIEdgeInsets (11, 11, 17, 18));
 		}
 
 
-		public ChatBubbleCell (bool isLeft) : base (UITableViewCellStyle.Default, isLeft ? KeyLeft : KeyRight){
+		public ChatBubbleCell (bool isLeft, bool isAttaPresent, bool delivered) : base (UITableViewCellStyle.Default, isLeft ? KeyLeft : KeyRight){
 
 			var rect = new RectangleF (0, 0, 1, 1);
 			this.isLeft = isLeft;
 			view = new UIView (rect);
 
-			imageView = new UIImageView (isLeft ? left : right);
+			if(delivered){
+				imageView = new UIImageView (isLeft ? left : right);
+			}else
+				imageView = new UIImageView (sendfalied);
+
 			view.AddSubview (imageView);
 
 			font = UIFont.PreferredBody;
@@ -74,8 +80,10 @@ namespace Stext{
 			view.AddSubview (imgView);
 
 			undelivered = new UIButton (UIButtonType.DetailDisclosure);
+			this.undelivered.TouchDown += (sender, e) => new UIAlertView("Error", "Error sending message", null, "OK", null).Show();
 			undelivered.TintColor = UIColor.Red;
 			undelivered.Hidden = true;
+
 			view.AddSubview (undelivered);
 
 			ContentView.Add (view);
@@ -99,6 +107,11 @@ namespace Stext{
 
 		public long getMessageID(){
 			return this.MessageID;
+		}
+
+		public void setImagePreview(UIImage thumbnail){
+			attachment = new UIImageView(thumbnail);
+			view.AddSubview(attachment);
 		}
 
 		public override void LayoutSubviews (){
@@ -126,7 +139,7 @@ namespace Stext{
 			undelivered.Frame = new RectangleF(
 				new PointF((isLeft ? 290 : 5), 
 					frame.Y + frameSize.Height - 25), 
-					imgSize);
+					new SizeF(25, 25));
 
 			imgSize = new SizeF(10, 13);
 			sOffset = 18;
@@ -154,6 +167,7 @@ namespace Stext{
 
 		public void SetAsUndelivered(){
 			this.undelivered.Hidden = false;
+//			this.undelivered.TouchUpInside += (sender, e) => new UIAlertView("Error", "Error sending message", null, "OK", null).Show();
 		}
 
 		public void Update (string text, string sender){

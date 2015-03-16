@@ -38,7 +38,6 @@ namespace Stext
 		{
 			return cellGroups.Count;
 		}
-
 		/// <summary>
 		/// Called by the TableView to determine how many cells to create for that particular section.
 		/// </summary>
@@ -97,6 +96,9 @@ namespace Stext
 			ICustomCell cell = cellGroups[indexPath.Section].Cells[indexPath.Row];
 
 			cell.tableSource = this;
+
+			Console.WriteLine("rkolli >>>>> @GetCell");
+
 
 			return (UITableViewCell) cell;
 		}

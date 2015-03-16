@@ -12,6 +12,7 @@ namespace Stext
 		public long TimeStamp_Sent { get; set; }
 		public int Read {get; set; }
 		public string Message{ get; set; }
+		public bool Status{ get; set; }
 		public string Service{ get; set; }
 	}
 }

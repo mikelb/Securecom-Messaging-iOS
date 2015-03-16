@@ -46,6 +46,7 @@ namespace Stext
 		public ConfirmationView()
 			: base("ConfirmationView", null)
 		{
+
 		}
 
 		public override void ViewDidAppear(bool animated)
@@ -264,7 +265,7 @@ namespace Stext
 			}, TaskScheduler.Current);
 		}
 
-		private static Dictionary<string,string> getDirectoryServerTokenDictionary(List<string> e164numbers)
+		public static Dictionary<string,string> getDirectoryServerTokenDictionary(List<string> e164numbers)
 		{
 			Dictionary<string,string> tokenDictionary = new Dictionary<string,string>(e164numbers.Count());
 			foreach (String number in e164numbers) {
@@ -294,6 +295,7 @@ namespace Stext
 		{
 			String title = (appDelegate.registrationView.registerMode == appDelegate.MODE_REGISTER_EMAIL) ? "Email Verification" : "Phone Verification";
 			NavigationItem.TitleView = StextUtil.SetTitleBarImage(title, 10, 40);
+			confCodeInput.Text = "";
 		}
 	}
 }

@@ -280,7 +280,7 @@ namespace Stext
 				}
 				Console.WriteLine("rkolli >>>>> inserting message into the DB");
 
-				var pmessage = new PushMessage{Thread_id = present_thread_id, Number = sender, TimeStamp = CurrentTimeMillis(), TimeStamp_Sent = Convert.ToInt64(messageid), Read = 1, Message = msg, Service = "Push"};
+				var pmessage = new PushMessage{Thread_id = present_thread_id, Number = sender, TimeStamp = CurrentTimeMillis(), TimeStamp_Sent = Convert.ToInt64(messageid), Read = 1, Message = msg, Status = true, Service = "Push"};
 				conn.Insert(pmessage);
 				conn.Commit();
 				conn.Close();

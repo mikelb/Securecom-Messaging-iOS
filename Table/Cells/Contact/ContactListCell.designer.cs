@@ -16,6 +16,9 @@ namespace Stext
 		MonoTouch.UIKit.UILabel emailLabel { get; set; }
 
 		[Outlet]
+		MonoTouch.UIKit.UILabel email { get; set; }
+
+		[Outlet]
 		MonoTouch.UIKit.UIBarButtonItem filterButton { get; set; }
 
 		[Outlet]
@@ -23,6 +26,9 @@ namespace Stext
 
 		[Outlet]
 		MonoTouch.UIKit.UILabel nameLabel { get; set; }
+
+		[Outlet]
+		MonoTouch.UIKit.UILabel phone { get; set; }
 
 		[Outlet]
 		MonoTouch.UIKit.UILabel phoneLabel { get; set; }
