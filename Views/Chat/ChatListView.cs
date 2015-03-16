@@ -66,11 +66,137 @@ namespace Stext
 			};
 
 			settingsButton.Clicked += (sender, e) => {
-				this.appDelegate.GoToView(this.appDelegate.settingsView);
+				//this.appDelegate.GoToView(this.appDelegate.settingsView);
+				SettingsAction();
+			};
+
+			search.CancelButtonClicked += (sender, e) => {
+				search.Text = "";
+				search.ResignFirstResponder();
+				search.SetShowsCancelButton(false, true);
+			};
+
+			search.TextChanged += async (object sender, UISearchBarTextChangedEventArgs e) => {
+				search.SetShowsCancelButton(true, true);
 			};
 
 		}
 
+
+		private void SettingsAction(){
+			try{
+
+				UIActionSheet actionSheet;
+				actionSheet = new UIActionSheet ();
+
+				actionSheet.AddButton ("Refresh Securecom Contacts");
+				actionSheet.AddButton ("Re-register");
+				actionSheet.AddButton ("Cancel");
+
+				actionSheet.Clicked += delegate(object a, UIButtonEventArgs b) {
+					if (b.ButtonIndex == (0)) {
+						try{
+							DoContactsSync();
+						}catch(Exception e){
+							UIAlertView alert = new UIAlertView("Failed!", "Contact Refresh Failed!", null, "Ok");
+							alert.Show();
+						}
+
+					} else if (b.ButtonIndex == (1)){
+						var alert = new UIAlertView {
+							Title = "Re-register?", 
+							Message = "This action will delete your preivious conversations!"
+						};
+						alert.AddButton("Yes");
+						alert.AddButton("No");
+						// last button added is the 'cancel' button (index of '2')
+						alert.Clicked += delegate(object a1, UIButtonEventArgs b1) {
+							if (b1.ButtonIndex == (0)) {
+								using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+									conn.Execute("DELETE FROM PushChatThread");
+									conn.Execute("DELETE FROM PushMessage");
+									conn.Commit();
+									conn.Close();
+								}
+								using (var conn1 = new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase)) {
+									conn1.Execute("DELETE FROM PushContact");
+									conn1.Commit();
+									conn1.Close();
+								}
+								appDelegate.GoToView(appDelegate.registrationView);
+							}
+						};
+						alert.Show ();
+					} 
+				};
+				actionSheet.ShowInView (View);
+			}catch(Exception ex){
+				Console.Write(ex.Message);
+			}
+		}
+
+		public void DoContactsSync(){
+			AddressBook book = new AddressBook();
+			List<String> contactlist = new List<String>();
+			book.RequestPermission().ContinueWith(t => {
+				if (!t.Result) {
+					Console.WriteLine("Permission denied by user or manifest");
+					return;
+				}
+
+				int counter = 0;
+				int contact_count = book.Count();
+				Console.WriteLine("rkolli >>>>> @RefreshPushDirectory, Address book count = " + contact_count);
+
+				foreach (Contact contact in book.OrderBy(c => c.LastName)) {
+					int idx = counter++;
+					if (!String.IsNullOrEmpty(contact.DisplayName)) {
+						foreach (Phone value in contact.Phones) {
+							if (!value.Number.Contains("*") || !value.Number.Contains("#")) {
+								var phoneUtil = PhoneNumberUtil.GetInstance();
+								PhoneNumber numberObject = phoneUtil.Parse(value.Number, "US");
+								var number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
+								contactlist.Add(number);
+							}
+						}
+						foreach (Email value in contact.Emails) {
+							contactlist.Add(value.Address);
+						}
+					}
+
+				}
+				Dictionary<string,string> tokens = ConfirmationView.getDirectoryServerTokenDictionary(contactlist);
+				List<String> list = new List<String>();
+				foreach (string key in tokens.Keys)
+					list.Add(key);
+				Console.WriteLine("intersecting " + list);
+				List<String> response = MessageManager.RetrieveDirectory(list);
+				List<String> result = new List<String>();
+				foreach (string key in response) {
+					if (tokens[key] != null)
+						result.Add(tokens[key]);
+				}
+				Console.WriteLine("rkolli >>>>> we're here 1");
+				// Figure out where the SQLite database will be.
+				using (var conn= new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase))
+				{
+					Console.WriteLine("rkolli >>>>> we're here 2");
+					conn.CreateTable<PushContact>();
+
+					foreach(String contact in result){
+						Console.WriteLine("we're here, push contact = " + contact);
+						var pcontact = new PushContact{Number = contact};
+						conn.Insert(pcontact);
+					}
+				}
+
+				Console.WriteLine("rkolli >>>>> we're here 3");
+
+			}, TaskScheduler.Current);
+
+			UIAlertView alert = new UIAlertView("Successfull!", "Contact Refresh Successfull!", null, "Ok");
+			alert.Show();
+		}
 
 		public void RowSelected(UITableView tableView, NSIndexPath indexPath)
 		{

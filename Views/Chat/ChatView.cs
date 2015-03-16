@@ -25,6 +25,7 @@ namespace Stext{
 		private List<string> messages;
 		private List<long> message_ids;
 		private List<string> timeStamps;
+		private List<bool> isdelivered;
 		private List<Boolean> isLeft;
 		private float btnCornerRadius = 5.0f;
 
@@ -48,6 +49,8 @@ namespace Stext{
 		public static string Number;
 		public static int ThreadID;
 		public static float TableRowHeight = 0;
+		protected UIImagePickerController imagePicker;
+		private UIImage thumbnail;
 
 
 		public ChatView () : base ("ChatView", null){
@@ -63,9 +66,12 @@ namespace Stext{
 			ChatBubbleCell cell;
 			Console.WriteLine("rkolli >>>>> @LoadTable"+", messages.Count = "+messages.Count);
 			for(int x = 0 ; x < messages.Count ; x++){
-				cell = new ChatBubbleCell(isLeft[x]);
+				cell = new ChatBubbleCell(isLeft[x], false, isdelivered[x]);
 				cell.Update (messages[x], timeStamps[x]);
 				cell.SetMessageID(message_ids[x]);
+				if (!isdelivered[x]) {
+					cell.SetAsUndelivered();
+				}
 				tableCellGroup.Cells.Add (cell);
 			}
 
@@ -116,8 +122,7 @@ namespace Stext{
 
 		public void RowSelected(UITableView tableView, NSIndexPath indexPath){
 
-			ICustomCell selectedCell = source.CellGroups[indexPath.Section].Cells[indexPath.Row];
-		
+			ChatBubbleCell selectedCell = (ChatBubbleCell) source.CellGroups[indexPath.Section].Cells[indexPath.Row];
 		}
 
 		public void refreshChat(){
@@ -207,7 +212,6 @@ namespace Stext{
 
 
 		private void AddPhoto(){
-
 			try{
 
 				UIActionSheet actionSheet;
@@ -219,9 +223,27 @@ namespace Stext{
 
 				actionSheet.Clicked += delegate(object a, UIButtonEventArgs b) {
 					if (b.ButtonIndex == (0)) {
-
+						Stext.Camera.TakePicture(this, (obj) =>{
+							var photo = obj.ValueForKey(new NSString("UIImagePickerControllerOriginalImage")) as UIImage;
+							var documentsDirectory = Environment.GetFolderPath
+								(Environment.SpecialFolder.Personal);
+							string jpgFilename = System.IO.Path.Combine (documentsDirectory, "Photo.jpg"); // hardcoded filename, overwritten each time
+							NSData imgData = photo.AsJPEG();
+							NSError err = null;
+							if (imgData.Save(jpgFilename, false, out err)) {
+								Console.WriteLine("saved as " + jpgFilename);
+								thumbnail = StextUtil.MaxResizeImage(UIImage.FromFile(jpgFilename), 100, 100);
+							} else {
+								Console.WriteLine("NOT saved as " + jpgFilename + " because" + err.LocalizedDescription);
+							}
+						});
 					} else {
-
+						imagePicker = new UIImagePickerController ();
+						imagePicker.SourceType = UIImagePickerControllerSourceType.PhotoLibrary;
+						imagePicker.MediaTypes = UIImagePickerController.AvailableMediaTypes (UIImagePickerControllerSourceType.PhotoLibrary);
+						imagePicker.FinishedPickingMedia += Handle_FinishedPickingMedia;
+						imagePicker.Canceled += Handle_Canceled;
+						NavigationController.PresentModalViewController(imagePicker, true);
 					} 
 				};
 				actionSheet.ShowInView (View);
@@ -230,6 +252,49 @@ namespace Stext{
 			}
 		}
 
+		protected void Handle_FinishedPickingMedia (object sender, UIImagePickerMediaPickedEventArgs e)
+		{
+			// determine what was selected, video or image
+			bool isImage = false;
+			switch(e.Info[UIImagePickerController.MediaType].ToString()) {
+			case "public.image":
+				Console.WriteLine("Image selected");
+				isImage = true;
+				break;
+			case "public.video":
+				Console.WriteLine("Video selected");
+				break;
+			}
+
+			// get common info (shared between images and video)
+			NSUrl referenceURL = e.Info[new NSString("UIImagePickerControllerReferenceUrl")] as NSUrl;
+			if (referenceURL != null)
+				Console.WriteLine("Url:"+referenceURL.ToString ());
+
+			// if it was an image, get the other image info
+			if(isImage) {
+				// get the original image
+				UIImage originalImage = e.Info[UIImagePickerController.OriginalImage] as UIImage;
+				if(originalImage != null) {
+					// do something with the image
+					Console.WriteLine ("got the original image");
+					thumbnail = StextUtil.MaxResizeImage(originalImage, 100, 100); // display
+					SendMessage(true);
+				}
+			} else { // if it's a video
+				// get video url
+				NSUrl mediaURL = e.Info[UIImagePickerController.MediaURL] as NSUrl;
+				if(mediaURL != null) {
+					Console.WriteLine(mediaURL.ToString());
+				}
+			}
+			// dismiss the picker
+			imagePicker.DismissModalViewControllerAnimated (true);
+		}
+
+		void Handle_Canceled (object sender, EventArgs e) {
+			imagePicker.DismissModalViewControllerAnimated(true);
+		}
 
 		private void SetExpandableTextViewSize(){
 
@@ -283,28 +348,19 @@ namespace Stext{
 		}
 
 
-		private void SendMessage(){
-
-			DateTime now = DateTime.Now;
-			string format = "ddd HH:mm tt";
+		private void SendMessage(bool isattachment){
 
 //			messages.Add (accessoryTextView.Text);
 //			timeStamps.Add(now.ToString("t"));
 //			isLeft.Add(false);
 
-			ChatBubbleCell cell = new ChatBubbleCell(false);
-			cell.Update (accessoryTextView.Text, now.ToString(format));
-			cell.SetAsPending ();
-			LoadTable(cell);
 
 //			ThreadStart childref = new ThreadStart(SendMessageThread);
 //			Thread childThread = new Thread(childref);
 //			childThread.Start();
 
-			TableRowHeight = cell.getHeight();
-
 			InvokeOnMainThread(delegate {
-				SendMessageThread();
+				SendMessageThread(isattachment);
 			});
 
 			//cell.SetAsSent();
@@ -317,23 +373,38 @@ namespace Stext{
 
 		}
 
-		private void SendMessageThread(){
+		private void SendMessageThread(bool isattachment){
+			DateTime now = DateTime.Now;
+			string format = "ddd HH:mm tt";
+			bool delivered = false;
 			try{
 				MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage(accessoryTextView.Text, Number));
-				using (var conn= new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase))
-				{
-					var pmessage = new PushMessage{Thread_id = ThreadID, Number = Number, TimeStamp = AppDelegate.CurrentTimeMillis(), TimeStamp_Sent = Convert.ToInt64(AppDelegate.CurrentTimeMillis()), Read = 0, Message = accessoryTextView.Text, Service = "PushLocal"};
-					conn.Insert(pmessage);
-					conn.Commit();
-					conn.Close();
-				}
-				PointF pf = new PointF (0f, (messages.Count - 1) * TableRowHeight - table.Bounds.Size.Height);
-				table.SetContentOffset(pf, true);
-
-				AddDataToConversation();
+				delivered = true;
 			}catch(Exception e){
 				Console.WriteLine("Exception while sending message...."+e.Message);
 			}
+
+			using (var conn= new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase))
+			{
+				var pmessage = new PushMessage{Thread_id = ThreadID, Number = Number, TimeStamp = AppDelegate.CurrentTimeMillis(), TimeStamp_Sent = Convert.ToInt64(AppDelegate.CurrentTimeMillis()), Read = 0, Message = accessoryTextView.Text, Status = delivered, Service = "PushLocal"};
+				conn.Insert(pmessage);
+				conn.Commit();
+				conn.Close();
+			}
+
+			PointF pf = new PointF (0f, (messages.Count - 1) * TableRowHeight - table.Bounds.Size.Height);
+			table.SetContentOffset(pf, true);
+
+			ChatBubbleCell cell = new ChatBubbleCell(false, false, delivered);
+			cell.Update (accessoryTextView.Text, now.ToString(format));
+			TableRowHeight = cell.getHeight();
+			if(!delivered)
+				cell.SetAsUndelivered();
+			if (isattachment)
+				cell.setImagePreview(thumbnail);
+			LoadTable(cell);
+
+			AddDataToConversation();
 		}
 
 
@@ -395,6 +466,7 @@ namespace Stext{
 			timeStamps = new List<string> ();
 			isLeft = new List<Boolean> ();
 			message_ids = new List<long>();
+			isdelivered = new List<bool>();
 			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
 				// Check if there is an existing thread for this sender
 				List<PushMessage> pmList = conn.Query<PushMessage>("SELECT * FROM PushMessage WHERE Thread_id = ?", ThreadID);
@@ -408,6 +480,7 @@ namespace Stext{
 
 					timeStamps.Add (""+epoch.ToString("ddd HH:mm tt"));
 					message_ids.Add(pm.TimeStamp);
+					isdelivered.Add(pm.Status);
 					if (pm.Service != "PushLocal") {
 						isLeft.Add(true);
 					} else {
@@ -465,7 +538,7 @@ namespace Stext{
 			};
 
 			accessoryCreateButton.Clicked += (sender, e) => {
-				SendMessage();
+				SendMessage(false);
 				accessoryTextView.Text = "";
 				ResignFirstResponders();
 				AnimateToolbar();

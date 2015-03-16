@@ -85,8 +85,13 @@ namespace Stext{
 			ButtonActions();
 
 			base.ViewDidLoad ();
-
+			search.CancelButtonClicked += (sender, e) => {
+				search.Text = "";
+				search.ResignFirstResponder();
+				search.SetShowsCancelButton(false, true);
+			};
 			search.TextChanged += async (object sender, UISearchBarTextChangedEventArgs e) => {
+				search.SetShowsCancelButton(true, true);
 				string searchText = e.SearchText.ToLower();
 				Console.WriteLine("Search text = " + e.SearchText);
 				if(!e.SearchText.Equals("")){
@@ -271,7 +276,11 @@ namespace Stext{
 					ContactListCell cell = ContactListCell.Create();
 					cell.SetName(contact.DisplayName);
 					cell.mobile = null;
-					cell.email = null;
+					cell._email = null;
+
+					cell.SetEmail(null);
+					cell.SetPhone(null);
+
 					if (contact.Phones.Any()) {
 						foreach (Phone p in contact.Phones) {
 							if (isOnlySecurecomContacts) {
@@ -311,14 +320,14 @@ namespace Stext{
 					}
 
 					if (!name_exists) {
-						if (cell.email != null || cell.mobile != null) {
+						if (cell._email != null || cell.mobile != null) {
 							tableCellGroup = new CustomCellGroup { Name = group };
 							cellGroups.Add(tableCellGroup);
 						} else
 							continue;
 					}
 
-					if (cell.email != null || cell.mobile != null) {
+					if (cell._email != null || cell.mobile != null) {
 						tableCellGroup.Cells.Add(cell);
 					}
 				}
@@ -397,7 +406,7 @@ namespace Stext{
 			ContactListCell selectedCell = (ContactListCell)source.CellGroups[indexPath.Section].Cells[indexPath.Row];
 
 			this.name = selectedCell.name;
-			this.email = selectedCell.email;
+			this.email = selectedCell._email;
 			this.mobile = selectedCell.mobile;
 
 			if (selectedCell.registeredState == ContactListCell.STATE_REGISTERED) {

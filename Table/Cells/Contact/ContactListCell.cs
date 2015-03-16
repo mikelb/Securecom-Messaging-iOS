@@ -22,7 +22,7 @@ namespace Stext{
 
 		public string name;
 		public string mobile;
-		public string email;
+		public string _email;
 
 		public static ContactListCell Create (){
 			return (ContactListCell)Nib.Instantiate (null, null) [0];
@@ -33,14 +33,24 @@ namespace Stext{
 			this.nameLabel.Text = name;
 		}
 
-		public void SetEmail(string email){
-			this.email = email;
-			this.emailLabel.Text = email;
+		public void SetEmail(string value){
+			if (value == null) {
+				this.email.Enabled = false;
+				return;
+			}
+			this._email = value;
+			this.email.Enabled = true;
+			this.emailLabel.Text = value;
 		}
 
-		public void SetPhone(string phone){
-			this.mobile = phone;
-			this.phoneLabel.Text = phone;
+		public void SetPhone(string value){
+			if (value == null) {
+				this.phone.Enabled = false;
+				return;
+			}
+			this.mobile = value;
+			this.phone.Enabled = true;
+			this.phoneLabel.Text = value;
 		}
 
 		public override float getHeight(){

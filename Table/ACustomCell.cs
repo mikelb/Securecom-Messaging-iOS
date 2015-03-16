@@ -35,6 +35,7 @@ namespace Stext
 
 		public abstract float getHeight();
 
+	
 		public bool AllowsDelete() {
 			return canDelete;
 		}
