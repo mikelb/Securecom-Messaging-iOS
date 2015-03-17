@@ -10,6 +10,7 @@ using MonoTouch.Dialog;
 using MonoTouch.CoreAnimation;
 using Securecom.Messaging;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace Stext{
 
@@ -696,7 +697,13 @@ namespace Stext{
 		}
 
 		public void setNumber(string value){
-			Number = value;
+			String temp = value;
+			temp = temp.Replace("(", string.Empty);
+			temp = temp.Replace(")", string.Empty);
+			temp = temp.Replace("-", string.Empty);
+			temp = Regex.Replace(temp, @"\s", "");
+
+			Number = temp;
 		}
 	}
 
