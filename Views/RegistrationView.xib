@@ -55,7 +55,7 @@ temporarily.</string>
                                 <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="+1" borderStyle="roundedRect" placeholder="+17887561234" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Bcv-LC-1hj">
                                     <rect key="frame" x="20" y="302" width="280" height="30"/>
                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                    <textInputTraits key="textInputTraits"/>
+                                    <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
                                 </textField>
                                 <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="United States" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="GDr-Kd-cHR">
                                     <rect key="frame" x="20" y="369" width="280" height="30"/>
@@ -124,7 +124,7 @@ temporarily.</string>
                                 <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="jon.doe@gmail.com" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="eg1-Yf-egz" userLabel="Email">
                                     <rect key="frame" x="20" y="302" width="280" height="30"/>
                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                    <textInputTraits key="textInputTraits"/>
+                                    <textInputTraits key="textInputTraits" keyboardType="emailAddress"/>
                                 </textField>
                                 <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="United States" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="gfX-Jd-jgm">
                                     <rect key="frame" x="20" y="369" width="280" height="30"/>

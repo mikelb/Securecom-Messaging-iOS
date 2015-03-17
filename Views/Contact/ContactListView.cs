@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using PhoneNumbers;
 
 namespace Stext{
 
@@ -22,7 +23,6 @@ namespace Stext{
 		private CustomCellGroup tableCellGroup;
 		private CustomCellTableSource source;
 		private List<CustomCellGroup> cellGroups;
-		private AddressBook book = new AddressBook();
 		private static bool isOnlySecurecomContacts = true;
 
 		#region entity fields
@@ -102,7 +102,7 @@ namespace Stext{
 				if(!e.SearchText.Equals("")){
 					List<CustomCellGroup> mCellGroups = new List<CustomCellGroup>();
 					CustomCellGroup mTableCellGroup = new CustomCellGroup { Name = "No Results" };
-
+					AddressBook book = new AddressBook();
 					foreach (Contact contact in book.OrderBy(c => c.DisplayName)) {
 						bool found = false;
 						if (!String.IsNullOrEmpty(contact.DisplayName)) {
@@ -113,10 +113,10 @@ namespace Stext{
 							}else if(contact.Phones.Any() || contact.Emails.Any()){
 								foreach (Phone p in contact.Phones) {
 									String temp = p.Number;
-									temp = temp.Replace("(", "");
-									temp = temp.Replace(")", "");
-									temp = temp.Replace("-", "");
-									temp = temp.Replace(" ", "");
+									temp = temp.Replace("(", string.Empty);
+									temp = temp.Replace(")", string.Empty);
+									temp = temp.Replace("-", string.Empty);
+									temp = temp.Replace(" ", string.Empty);
 									found |= temp.Contains(searchText);
 								}
 
@@ -243,6 +243,7 @@ namespace Stext{
 		private void AddContactsData(string filter){
 			List<String> contactlist = new List<String>();
 			List<PushContact> pc;
+			AddressBook book = new AddressBook();
 			book.RequestPermission().ContinueWith(t => {
 				if (!t.Result) {
 					Console.WriteLine("Permission denied by user or manifest");
@@ -290,15 +291,21 @@ namespace Stext{
 						foreach (Phone p in contact.Phones) {
 							if (isOnlySecurecomContacts) {
 								foreach (PushContact push in pc) {
-									String temp = p.Number;
-									temp = temp.Replace("(", string.Empty);
-									temp = temp.Replace(")", string.Empty);
-									temp = temp.Replace("-", string.Empty);
-									temp = Regex.Replace(temp, @"\s", "");
-									if (push.Number.Contains(temp)) {
-										cell.SetPhone(p.Number);
-										cell.registeredState = ContactListCell.STATE_REGISTERED;
-										break;
+									// String temp = p.Number;
+									Console.WriteLine("rkolli >>>>> Contact = "+p.Number);
+									if (!p.Number.Contains("*") || !p.Number.Contains("#")) {
+										var phoneUtil = PhoneNumberUtil.GetInstance();
+										PhoneNumber numberObject = phoneUtil.Parse(p.Number, "US");
+										var number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
+//									temp = temp.Replace("(", string.Empty);
+//									temp = temp.Replace(")", string.Empty);
+//									temp = temp.Replace("-", string.Empty);
+//									temp = Regex.Replace(temp, @"\s", "");
+										if (push.Number == number) {
+											cell.SetPhone(p.Number);
+											cell.registeredState = ContactListCell.STATE_REGISTERED;
+											break;
+										}
 									}
 								}
 							} else {
@@ -395,6 +402,7 @@ namespace Stext{
 								conn.Close();
 								present_thread_id = pct_val.ID;
 							}
+
 							appDelegate.chatView.setThreadID(present_thread_id);
 							appDelegate.chatView.setNumber(recipient);
 							appDelegate.chatView.setThreadSelected(this.name+" ("+recipient+")");

@@ -96,7 +96,21 @@ namespace Stext
 				actionSheet.Clicked += delegate(object a, UIButtonEventArgs b) {
 					if (b.ButtonIndex == (0)) {
 						try{
-							DoContactsSync();
+							LoadingOverlay loadingOverlay;
+
+							// Determine the correct size to start the overlay (depending on device orientation)
+							var bounds = UIScreen.MainScreen.Bounds; // portrait bounds
+							if (UIApplication.SharedApplication.StatusBarOrientation == UIInterfaceOrientation.LandscapeLeft || UIApplication.SharedApplication.StatusBarOrientation == UIInterfaceOrientation.LandscapeRight) {
+								bounds.Size = new SizeF(bounds.Size.Height, bounds.Size.Width);
+							}
+							// show the loading overlay on the UI thread using the correct orientation sizing
+							loadingOverlay = new LoadingOverlay (bounds);
+							this.View.Add ( loadingOverlay );
+
+							Task taskA = Task.Factory.StartNew(DoContactsSync);
+							taskA.Wait();
+							loadingOverlay.Hide();
+
 						}catch(Exception e){
 							UIAlertView alert = new UIAlertView("Failed!", "Contact Refresh Failed!", null, "Ok");
 							alert.Show();
@@ -135,51 +149,55 @@ namespace Stext
 			}
 		}
 
-		public void DoContactsSync(){
+		public async void DoContactsSync(){
 			AddressBook book = new AddressBook();
 			List<String> contactlist = new List<String>();
-			book.RequestPermission().ContinueWith(t => {
-				if (!t.Result) {
-					Console.WriteLine("Permission denied by user or manifest");
-					return;
-				}
+			if (!await book.RequestPermission()) {
+				Console.WriteLine ("Permission denied by user or manifest");
+				return;
+			}
 
-				int counter = 0;
-				int contact_count = book.Count();
-				Console.WriteLine("rkolli >>>>> @RefreshPushDirectory, Address book count = " + contact_count);
+			int counter = 0;
+			int contact_count = book.Count();
+			Console.WriteLine("rkolli >>>>> @RefreshPushDirectory, Address book count = " + contact_count);
 
-				foreach (Contact contact in book.OrderBy(c => c.LastName)) {
-					int idx = counter++;
-					if (!String.IsNullOrEmpty(contact.DisplayName)) {
-						foreach (Phone value in contact.Phones) {
-							if (!value.Number.Contains("*") || !value.Number.Contains("#")) {
-								var phoneUtil = PhoneNumberUtil.GetInstance();
-								PhoneNumber numberObject = phoneUtil.Parse(value.Number, "US");
-								var number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
-								contactlist.Add(number);
-							}
-						}
-						foreach (Email value in contact.Emails) {
-							contactlist.Add(value.Address);
+			foreach (Contact contact in book.OrderBy(c => c.LastName)) {
+				int idx = counter++;
+				if (!String.IsNullOrEmpty(contact.DisplayName)) {
+					foreach (Phone value in contact.Phones) {
+						if (!value.Number.Contains("*") || !value.Number.Contains("#")) {
+							var phoneUtil = PhoneNumberUtil.GetInstance();
+							PhoneNumber numberObject = phoneUtil.Parse(value.Number, "US");
+							var number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
+							Console.WriteLine("rkolli >>>>> Actual Number = "+value.Number+", After Format Number = "+number);
+							contactlist.Add(number);
 						}
 					}
+					foreach (Email value in contact.Emails) {
+						contactlist.Add(value.Address);
+					}
+				}
 
-				}
-				Dictionary<string,string> tokens = ConfirmationView.getDirectoryServerTokenDictionary(contactlist);
-				List<String> list = new List<String>();
-				foreach (string key in tokens.Keys)
-					list.Add(key);
-				Console.WriteLine("intersecting " + list);
-				List<String> response = MessageManager.RetrieveDirectory(list);
-				List<String> result = new List<String>();
-				foreach (string key in response) {
-					if (tokens[key] != null)
-						result.Add(tokens[key]);
-				}
-				Console.WriteLine("rkolli >>>>> we're here 1");
-				// Figure out where the SQLite database will be.
+			}
+			Dictionary<string,string> tokens = ConfirmationView.getDirectoryServerTokenDictionary(contactlist);
+			List<String> list = new List<String>();
+			foreach (string key in tokens.Keys)
+				list.Add(key);
+			Console.WriteLine("Total Contacts prepared to Send =  " + list.Count);
+			List<String> response = MessageManager.RetrieveDirectory(list);
+			List<String> result = new List<String>();
+			foreach (string key in response) {
+				if (tokens[key] != null)
+					result.Add(tokens[key]);
+			}
+			Console.WriteLine("count after intersection = " + result.Count);
+			Console.WriteLine("rkolli >>>>> we're here 1");
+			// Figure out where the SQLite database will be.
+			try{
 				using (var conn= new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase))
 				{
+					conn.Execute("DELETE FROM PushContact");
+					conn.Commit();
 					Console.WriteLine("rkolli >>>>> we're here 2");
 					foreach(String contact in result){
 						Console.WriteLine("we're here, push contact = " + contact);
@@ -187,13 +205,12 @@ namespace Stext
 						conn.Insert(pcontact);
 					}
 				}
+			}catch(Exception e){
+			}
 
-				Console.WriteLine("rkolli >>>>> we're here 3");
-
-			}, TaskScheduler.Current);
-
-			UIAlertView alert = new UIAlertView("Successfull!", "Contact Refresh Successfull!", null, "Ok");
-			alert.Show();
+			Console.WriteLine("rkolli >>>>> we're here 3");
+//			UIAlertView alert = new UIAlertView("Successfull!", "Contact Refresh Successfull!", null, "Ok");
+//			alert.Show();
 		}
 
 		public void RowSelected(UITableView tableView, NSIndexPath indexPath)
@@ -315,7 +332,7 @@ namespace Stext
 
 					//if (!headerExists) {
 						ChatCell chatCell = ChatCell.Create();
-						chatCell.SetHeader(display_name);
+						chatCell.SetHeader(display_name+" ("+_m.Number+")");
 						chatCell.SetSubheading(_m.Snippet);
 						chatCell.SetThreadID(_m.ID);
 						chatCell.SetNumber(_m.Number);

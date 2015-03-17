@@ -11,6 +11,7 @@ using MonoTouch.CoreAnimation;
 using Securecom.Messaging;
 using System.Threading;
 using System.Text.RegularExpressions;
+using PhoneNumbers;
 
 namespace Stext{
 
@@ -697,13 +698,19 @@ namespace Stext{
 		}
 
 		public void setNumber(string value){
-			String temp = value;
-			temp = temp.Replace("(", string.Empty);
-			temp = temp.Replace(")", string.Empty);
-			temp = temp.Replace("-", string.Empty);
-			temp = Regex.Replace(temp, @"\s", "");
+//			String temp = value;
+//			temp = temp.Replace("(", string.Empty);
+//			temp = temp.Replace(")", string.Empty);
+//			temp = temp.Replace("-", string.Empty);
+//			temp = Regex.Replace(temp, @"\s", "");
+			var number = value;
+			if (!number.Contains("@")) {
+				var phoneUtil = PhoneNumberUtil.GetInstance();
+				PhoneNumber numberObject = phoneUtil.Parse(value, "US");
+				number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
+			}
 
-			Number = temp;
+			Number = number;
 		}
 	}
 

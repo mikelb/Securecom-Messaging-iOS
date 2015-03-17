@@ -27,6 +27,7 @@
     <MtouchOptimizePNGs>True</MtouchOptimizePNGs>
     <MtouchI18n>
     </MtouchI18n>
+    <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>full</DebugType>
@@ -49,13 +50,13 @@
     <ConsolePause>false</ConsolePause>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchDebug>true</MtouchDebug>
-    <CodesignKey>iPhone Developer</CodesignKey>
+    <CodesignKey>iPhone Developer: Raghava Reddy (9SV7F5C87R)</CodesignKey>
     <MtouchI18n>
     </MtouchI18n>
     <MtouchArch>ARMv7</MtouchArch>
     <IpaPackageName>
     </IpaPackageName>
-    <CodesignProvision>794ab05f-c7b6-4553-a425-9ea73343caac</CodesignProvision>
+    <CodesignProvision>15b16297-5cc6-467a-a784-c8539f4f8453</CodesignProvision>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>full</DebugType>
@@ -105,9 +106,16 @@
     <Reference Include="Xamarin.Mobile">
       <HintPath>Components\xamarin.mobile-0.7.1\lib\ios\Xamarin.Mobile.dll</HintPath>
     </Reference>
+    <Reference Include="PhoneNumbers">
+      <HintPath>packages\libphonenumber-csharp.4.10.0.62\lib\PhoneNumbers.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Data.Sqlite" />
+    <Reference Include="System.Data" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Securecom-Messaging-CSharp\Securecom-Messageing-Spec\3rdParty\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <BundleResource Include="Resources\Default-568h%402x.png" />
     <BundleResource Include="Images\Titlebar\chat.png" />
     <BundleResource Include="Images\Titlebar\chatConnect.png" />
     <BundleResource Include="Images\Icons\check.png" />
@@ -116,7 +124,6 @@
     <BundleResource Include="Images\Chat\chat-bubble-right.png" />
     <BundleResource Include="Images\Chat\chat-bubble-right%402x.png" />
     <BundleResource Include="Images\Icons\lock.png" />
-    <BundleResource Include="Images\Icons\lock%402x.png" />
     <BundleResource Include="Images\scm\Securecom Mobile 144x144 dark gray SText.png" />
     <BundleResource Include="Images\scm\Securecom Mobile 144x144 dark gray.png" />
     <BundleResource Include="Images\scm\Securecom Mobile 144x144 light gray SText.png" />
@@ -155,13 +162,13 @@
     <BundleResource Include="Resources\Icon-Small.png" />
     <BundleResource Include="Resources\Icon-Small%402x.png" />
     <BundleResource Include="Resources\Icon-Small-40%402x.png" />
-    <BundleResource Include="Resources\Default.png" />
-    <BundleResource Include="Resources\Default%402x.png" />
     <BundleResource Include="Images\Icons\lock_30.png" />
     <BundleResource Include="Images\Chat\greenlock.png" />
     <BundleResource Include="Images\Chat\lock.png" />
     <BundleResource Include="Images\Chat\placeholder.png" />
     <BundleResource Include="Images\Contact\placeholder.png" />
+    <BundleResource Include="Images\lock_30.png" />
+    <BundleResource Include="Images\Chat\chat-bubble-undelivered.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -255,6 +262,13 @@
     <Compile Include="Table\Cells\Settings\SettingsSubheadingCell.designer.cs">
       <DependentUpon>SettingsSubheadingCell.cs</DependentUpon>
     </Compile>
+    <Compile Include="Entities\PushContact.cs" />
+    <Compile Include="Database\SQLite.cs" />
+    <Compile Include="Entities\PushMessage.cs" />
+    <Compile Include="Entities\PushChatThread.cs" />
+    <Compile Include="Views\Chat\IncomingPushListener.cs" />
+    <Compile Include="Util\Camera.cs" />
+    <Compile Include="Util\LoadingOverlay.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
   <Import Project="packages\xamstore-xamarin.mobile.0.7.1\build\monotouch\xamstore-xamarin.mobile.props" Condition="Exists('packages\xamstore-xamarin.mobile.0.7.1\build\monotouch\xamstore-xamarin.mobile.props')" />
@@ -288,16 +302,6 @@
     <ITunesArtwork Include="iTunesArtwork" />
     <ITunesArtwork Include="iTunesArtwork%402x" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom-Messageing-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj">
-      <Project>{70BF2276-52DD-4427-B96B-8A4FDE745015}</Project>
-      <Name>Securecom.Messaging.Spec</Name>
-    </ProjectReference>
-    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\Securecom.Messaging.Net.csproj">
-      <Project>{2CC5830D-F86D-49A8-84F3-2E575ECB203A}</Project>
-      <Name>Securecom.Messaging.Net</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
       <Properties>
@@ -311,4 +315,28 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <ItemGroup>
+    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Default.png" />
+    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Default%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Default-568h%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\LaunchImage-1.launchimage\Contents.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Entities\" />
+    <Folder Include="Database\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\Securecom.Messaging.Net.csproj">
+      <Project>{2CC5830D-F86D-49A8-84F3-2E575ECB203A}</Project>
+      <Name>Securecom.Messaging.Net</Name>
+    </ProjectReference>
+    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom-Messageing-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj">
+      <Project>{70BF2276-52DD-4427-B96B-8A4FDE745015}</Project>
+      <Name>Securecom.Messaging.Spec</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\Icons\lock%402x.png" />
+  </ItemGroup>
 </Project>
