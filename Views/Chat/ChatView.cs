@@ -10,6 +10,7 @@ using MonoTouch.Dialog;
 using MonoTouch.CoreAnimation;
 using Securecom.Messaging;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace Stext{
 
