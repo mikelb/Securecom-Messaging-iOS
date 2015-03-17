@@ -11,6 +11,7 @@ using Xamarin.Contacts;
 using System.Threading.Tasks;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Stext{
 
@@ -290,11 +291,10 @@ namespace Stext{
 							if (isOnlySecurecomContacts) {
 								foreach (PushContact push in pc) {
 									String temp = p.Number;
-									temp = temp.Replace("(", "");
-									temp = temp.Replace(")", "");
-									temp = temp.Replace("-", "");
-									temp = temp.Replace(" ", "");
-									Console.WriteLine("rkolli >>>>> PushContact found Number = "+push.Number+", Contact Number = "+temp);
+									temp = temp.Replace("(", string.Empty);
+									temp = temp.Replace(")", string.Empty);
+									temp = temp.Replace("-", string.Empty);
+									temp = Regex.Replace(temp, @"\s", "");
 									if (push.Number.Contains(temp)) {
 										cell.SetPhone(p.Number);
 										cell.registeredState = ContactListCell.STATE_REGISTERED;
