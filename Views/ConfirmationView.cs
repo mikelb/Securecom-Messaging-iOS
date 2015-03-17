@@ -194,7 +194,11 @@ namespace Stext
 						Console.WriteLine("rkolli @ STATE_REGISTERING_WITH_SERVER");
 
 						// Do Directory sync
-						RefreshPushDirectory();
+						try{
+							RefreshPushDirectory();
+						}catch(Exception e){
+							Console.WriteLine("Exception Thrown At "+e.ToString());
+						}
 						break;
 					}
 					STATE++;
@@ -251,8 +255,6 @@ namespace Stext
 				using (var conn= new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase))
 				{
 					Console.WriteLine("rkolli >>>>> we're here 2");
-					conn.CreateTable<PushContact>();
-
 					foreach(String contact in result){
 						Console.WriteLine("we're here, push contact = " + contact);
 						var pcontact = new PushContact{Number = contact};

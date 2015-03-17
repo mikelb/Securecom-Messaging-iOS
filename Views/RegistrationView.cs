@@ -106,6 +106,9 @@ namespace Stext
 			this.EmailRegisterView.ContentSize = new SizeF(320, 700);
 			this.PhoneRegisterView.ContentSize = new SizeF(320, 700);
 			base.ViewDidLoad();
+
+			var g = new UITapGestureRecognizer(() => View.EndEditing(true));
+			View.AddGestureRecognizer(g);
 	
 			this.Continue.TouchUpInside += (sender, e) => {
 				appDelegate.GoToView(appDelegate.verificationView);
@@ -132,15 +135,23 @@ namespace Stext
 				this.PhPhoneNumberInput.BecomeFirstResponder();
 			};
 
+			this.EmEmailInput.ShouldReturn += (textField) => {
+				textField.ResignFirstResponder();
+				return true;
+			};
+
 			this.PhPhoneNumberInput.ShouldReturn += (textField) => { 
 				textField.ResignFirstResponder();
 				return true;
 			};
 
 			this.Continue.TouchUpInside += (sender, e) => {
-				String phoneNumber = PhPhoneNumberInput.Text;
+				String phoneNumber = "";
+				bool isEmail = false;
+				phoneNumber = (registerMode == 0) ? PhPhoneNumberInput.Text : EmEmailInput.Text;
+				isEmail = (registerMode != 0);
 				appDelegate.CreateMessageManager(phoneNumber);
-				MessageManager.CreateAccount(phoneNumber, false);
+				MessageManager.CreateAccount(phoneNumber, isEmail);
 			};
 		}
 

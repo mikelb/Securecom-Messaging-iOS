@@ -113,7 +113,7 @@
             <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
         </view>
-        <barButtonItem systemItem="camera" id="rnL-xZ-jEY">
+        <barButtonItem enabled="NO" systemItem="camera" id="rnL-xZ-jEY">
             <color key="tintColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
         </barButtonItem>
         <navigationBar contentMode="scaleToFill" id="fMm-Ta-zDl">
