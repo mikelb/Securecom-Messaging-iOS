@@ -6,7 +6,8 @@ namespace Stext
 	{
 		[SQLite.PrimaryKey, SQLite.AutoIncrement]
 		public int ID { get; set; }
-		public string Number { get; set; }
+		[SQLite.Unique]
+		public string  Number { get; set; }
 	}
 }
 

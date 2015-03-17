@@ -9,6 +9,7 @@ using Securecom.Messaging;
 using Securecom.Messaging.Entities;
 using Securecom.Messaging.Utils;
 using System.Text.RegularExpressions;
+using PhoneNumbers;
 
 namespace Stext
 {
@@ -265,12 +266,14 @@ namespace Stext
 					foreach (PushChatThread pct in pctList) {
 						Console.WriteLine("rkolli >>>>> @updateChatThread"+", Count = " + pctList.Count);
 						Console.WriteLine("rkolli >>>>> @updateChatThread"+", Number = " + pct.Number + ", Sender = " + sender + ", ID = " + pct.ID);
-						String temp = pct.Number;
-						temp = temp.Replace("(", string.Empty);
-						temp = temp.Replace(")", string.Empty);
-						temp = temp.Replace("-", string.Empty);
-						temp = Regex.Replace(temp, @"\s", "");
-						if (temp.Equals(sender)) {
+						var number = pct.Number;
+						if (!number.Contains("@")) {
+							var phoneUtil = PhoneNumberUtil.GetInstance();
+							PhoneNumber numberObject = phoneUtil.Parse(pct.Number, "US");
+							number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
+						}
+
+						if (number.Equals(sender)) {
 							present_thread_id = pct.ID;
 							Console.WriteLine("rkolli >>>>> @updateChatThread, updaing chat row, present_thread_id = " + present_thread_id);
 							conn.Execute("UPDATE PushChatThread Set Snippet = ?, TimeStamp = ?, Message_count = ?, Read = ?, Type = ? WHERE ID = ?", msg, messageid, 1, 1, "Push", present_thread_id);

@@ -230,6 +230,7 @@ namespace Stext
 								var phoneUtil = PhoneNumberUtil.GetInstance();
 								PhoneNumber numberObject = phoneUtil.Parse(value.Number, "US");
 								var number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
+								Console.WriteLine("rkolli >>>>> Number before format = "+value.Number+", after format = "+number);
 								contactlist.Add(number);
 							}
 						}
