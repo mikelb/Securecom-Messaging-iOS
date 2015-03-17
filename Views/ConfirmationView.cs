@@ -1,28 +1,19 @@
 ﻿
 using System;
-using System.Drawing;
-
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
-using System.Threading;
-
-using Securecom.Messaging;
-using Securecom.Messaging.Utils;
-using Securecom.Messaging.Spec;
-using Securecom.Messaging.Net;
-using Securecom.Messaging.Entities;
-
-using System.Security.Cryptography.X509Certificates;
-using System.Security;
-using System.IO;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Org.BouncyCastle.Utilities.Encoders;
-using Xamarin.Contacts;
-using PhoneNumbers;
+using System.Threading;
 using System.Threading.Tasks;
+
+using MonoTouch.UIKit;
+using Org.BouncyCastle.Utilities.Encoders;
+using PhoneNumbers;
+using Securecom.Messaging;
+using Securecom.Messaging.Net;
+using Xamarin.Contacts;
 
 namespace Stext
 {
@@ -90,7 +81,7 @@ namespace Stext
 				spinner4.Hidden = true;
 				img4.Hidden = false;
 				STextConfig cfg = STextConfig.GetInstance();
-				cfg.registered = true;
+				cfg.Registered = true;
 				cfg.SaveConfig();
 				break;
 			case STATE_GO_TO_CHATVIEW:

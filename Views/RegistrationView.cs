@@ -2,19 +2,10 @@
 using System;
 using System.Drawing;
 
-using MonoTouch.Foundation;
 using MonoTouch.UIKit;
-using System.Collections.Generic;
 
 using Securecom.Messaging;
-using Securecom.Messaging.Utils;
-using Securecom.Messaging.Spec;
-using Securecom.Messaging.Net;
-using Securecom.Messaging.Entities;
 
-using System.Security.Cryptography.X509Certificates;
-using System.Security;
-using System.IO;
 
 namespace Stext
 {

@@ -6,9 +6,8 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 
 using Securecom.Messaging;
-using Securecom.Messaging.Entities;
-using Securecom.Messaging.Utils;
 using System.Text.RegularExpressions;
+using Securecom.Messaging.Net;
 
 namespace Stext
 {
@@ -98,7 +97,7 @@ namespace Stext
 		private UIViewController GetLaunchView()
 		{
 			//return registrationView;
-			if (!config.registered)
+			if (!config.Registered)
 				return registrationView;
 			return chatListView;
 		}
