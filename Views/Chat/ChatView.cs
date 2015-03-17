@@ -524,7 +524,7 @@ namespace Stext{
 			};
 
 			photoButton.Clicked += (sender, e) => {
-				AddPhoto();
+				//AddPhoto();
 			};
 
 //			edit.TouchUpInside += (sender, e) => {

@@ -33,6 +33,10 @@ namespace Stext{
 			this.nameLabel.Text = name;
 		}
 
+		public string GetName(){
+			return this.name;
+		}
+
 		public void SetEmail(string value){
 			if (value == null) {
 				this.email.Enabled = false;

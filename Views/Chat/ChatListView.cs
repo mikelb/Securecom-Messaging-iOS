@@ -181,8 +181,6 @@ namespace Stext
 				using (var conn= new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase))
 				{
 					Console.WriteLine("rkolli >>>>> we're here 2");
-					conn.CreateTable<PushContact>();
-
 					foreach(String contact in result){
 						Console.WriteLine("we're here, push contact = " + contact);
 						var pcontact = new PushContact{Number = contact};
@@ -383,7 +381,7 @@ namespace Stext
 				Console.WriteLine("Error while deleting thread "+e.Message);
 			}
 			ShowEditButton();
-			UIAlertView alert = new UIAlertView("Deleted", ""+indexPath.Row, null, "Ok");
+			UIAlertView alert = new UIAlertView("Deleted Conversation with", ""+selectedCell.GetNumber(), null, "Ok");
 			alert.Show();
 		}
 

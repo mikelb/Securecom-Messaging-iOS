@@ -35,7 +35,11 @@ namespace Stext{
 
 		public override void ViewWillAppear (bool animated){
 			this.Title = "Select Contact";
-			this.PopulateTable ("Securecom users");
+			try{
+				this.PopulateTable ("Securecom users");
+			}catch(Exception e){
+				Console.WriteLine("Exception Thrown At "+e.ToString());
+			}
 		}
 
 
@@ -293,11 +297,13 @@ namespace Stext{
 									Console.WriteLine("rkolli >>>>> PushContact found Number = "+push.Number+", Contact Number = "+temp);
 									if (push.Number.Contains(temp)) {
 										cell.SetPhone(p.Number);
+										cell.registeredState = ContactListCell.STATE_REGISTERED;
 										break;
 									}
 								}
 							} else {
 								cell.SetPhone(p.Number);
+								cell.registeredState = ContactListCell.STATE_PENDING;
 							}
 							break;
 						}
@@ -309,11 +315,13 @@ namespace Stext{
 								foreach (PushContact push in pc) {
 									if (push.Number == e.Address) {
 										cell.SetEmail(e.Address);
+										cell.registeredState = ContactListCell.STATE_REGISTERED;
 										break;
 									}
 								}
 							} else {
 								cell.SetPhone(e.Address);
+								cell.registeredState = ContactListCell.STATE_PENDING;
 							}
 							break;
 						}
@@ -409,15 +417,12 @@ namespace Stext{
 			this.email = selectedCell._email;
 			this.mobile = selectedCell.mobile;
 
-			if (selectedCell.registeredState == ContactListCell.STATE_REGISTERED) {
-				this.appDelegate.GoToView (this.appDelegate.chatView);
-			}else if (selectedCell.registeredState == ContactListCell.STATE_PENDING) {
-				ShowPendingContactOptions ();
-				//this.appDelegate.GoToView (this.appDelegate.contactDetailView);
-			}else {
-				ShowPendingContactOptions ();
-				//this.appDelegate.GoToView (this.appDelegate.contactDetailView);
-			}
+			ShowPendingContactOptions();
+//			if (selectedCell.registeredState == ContactListCell.STATE_REGISTERED) {
+//				ShowPendingContactOptions();
+//			} else if (selectedCell.registeredState == ContactListCell.STATE_PENDING) {
+//				ShowPendingContactOptions();
+//			}
 
 			//this.appDelegate.alert.showOkAlert("Contact State",selectedCell.registeredState.ToString());
 		}

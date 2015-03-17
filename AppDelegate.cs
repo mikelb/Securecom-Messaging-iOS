@@ -158,6 +158,10 @@ namespace Stext
 				conn.CreateTable<PushChatThread>();
 				conn.CreateTable<PushMessage>();
 			}
+
+			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase)) {
+				conn.CreateTable<PushContact>();
+			}
 		}
 
 		public override void OnResignActivation(UIApplication application) {}

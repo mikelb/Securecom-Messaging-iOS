@@ -25,7 +25,7 @@ namespace Stext
 		MonoTouch.UIKit.UIButton EmChooseOptionButton { get; set; }
 
 		[Outlet]
-		public MonoTouch.UIKit.UITextField EmEmailInput { get; private set; }
+		public MonoTouch.UIKit.UITextField EmEmailInput { get; set; }
 
 		[Outlet]
 		MonoTouch.UIKit.UIButton EmRegister { get; set; }
