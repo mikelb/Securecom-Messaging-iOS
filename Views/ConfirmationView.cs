@@ -23,6 +23,7 @@ using Org.BouncyCastle.Utilities.Encoders;
 using Xamarin.Contacts;
 using PhoneNumbers;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace Stext
 {
@@ -158,6 +159,7 @@ namespace Stext
 		{
 			SetCurrentState(STATE_CONNECTING);
 			String verificationCode = confCodeInput.Text;
+			bool quitloop = false;
 
 			InvokeInBackground(delegate {
 				while (STATE != STATE_GO_TO_CHATVIEW) {
@@ -170,7 +172,16 @@ namespace Stext
 						STextConfig cfg = STextConfig.GetInstance();
 						String signalingKey = cfg.AccountAttributes.SignalingKey;
 						int registrationId = cfg.AccountAttributes.RegistrationId;
-						MessageManager.VerifyAccount(verificationCode, signalingKey, true, registrationId);
+						try{
+							MessageManager.VerifyAccount(verificationCode, signalingKey, true, registrationId);
+						}catch(WebException we){
+							InvokeOnMainThread(delegate {
+								UIAlertView alert = new UIAlertView("Error!", "Invalid verification code!", null, "Ok");
+								alert.Show();
+								appDelegate.GoToView(appDelegate.verificationView);
+								quitloop = true;
+							});
+						}
 						break;
 					case STATE_GENERATING_KEYS:
 						//MasterSecretUtil masterSecretUtil = new MasterSecretUtil();
@@ -199,6 +210,9 @@ namespace Stext
 						}catch(Exception e){
 							Console.WriteLine("Exception Thrown At "+e.ToString());
 						}
+						break;
+					}
+					if(quitloop){
 						break;
 					}
 					STATE++;
