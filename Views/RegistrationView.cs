@@ -15,6 +15,7 @@ using Securecom.Messaging.Entities;
 using System.Security.Cryptography.X509Certificates;
 using System.Security;
 using System.IO;
+using System.Net;
 
 namespace Stext
 {
@@ -151,7 +152,13 @@ namespace Stext
 				phoneNumber = (registerMode == 0) ? PhPhoneNumberInput.Text : EmEmailInput.Text;
 				isEmail = (registerMode != 0);
 				appDelegate.CreateMessageManager(phoneNumber);
-				MessageManager.CreateAccount(phoneNumber, isEmail);
+				try{
+					MessageManager.CreateAccount(phoneNumber, isEmail);
+				}catch(WebException we){
+					appDelegate.GoToView(appDelegate.registrationView);
+					UIAlertView alert = new UIAlertView("Error!", "Please enter a valid phone number!", null, "Ok");
+					alert.Show();
+				}
 			};
 		}
 
