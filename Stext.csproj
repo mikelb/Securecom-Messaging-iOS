@@ -50,13 +50,12 @@
     <ConsolePause>false</ConsolePause>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchDebug>true</MtouchDebug>
-    <CodesignKey>iPhone Developer: Raghava Reddy (9SV7F5C87R)</CodesignKey>
+    <CodesignKey>iPhone Developer</CodesignKey>
     <MtouchI18n>
     </MtouchI18n>
     <MtouchArch>ARMv7</MtouchArch>
     <IpaPackageName>
     </IpaPackageName>
-    <CodesignProvision>15b16297-5cc6-467a-a784-c8539f4f8453</CodesignProvision>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>full</DebugType>
@@ -98,7 +97,7 @@
     <Reference Include="monotouch" />
     <Reference Include="MonoTouch.Dialog-1" />
     <Reference Include="protobuf-net">
-      <HintPath>Securecom-Messaging-CSharp\Securecom-Messageing-Spec\3rdParty\protobuf-net.dll</HintPath>
+      <HintPath>Securecom-Messaging-CSharp\Securecom-Messaging-Spec\3rdParty\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\3rdParty\BouncyCastle.Crypto.dll</HintPath>
@@ -112,7 +111,7 @@
     <Reference Include="Mono.Data.Sqlite" />
     <Reference Include="System.Data" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>Securecom-Messaging-CSharp\Securecom-Messageing-Spec\3rdParty\Newtonsoft.Json.dll</HintPath>
+      <HintPath>Securecom-Messaging-CSharp\Securecom-Messaging-Spec\3rdParty\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -169,6 +168,9 @@
     <BundleResource Include="Images\Contact\placeholder.png" />
     <BundleResource Include="Images\lock_30.png" />
     <BundleResource Include="Images\Chat\chat-bubble-undelivered.png" />
+    <BundleResource Include="Resources\Default-568h%402x.png" />
+    <BundleResource Include="Resources\Default.png" />
+    <BundleResource Include="Resources\Default%402x.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -316,22 +318,19 @@
     </MonoDevelop>
   </ProjectExtensions>
   <ItemGroup>
-    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Contents.json" />
-    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Default.png" />
-    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Default%402x.png" />
-    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Default-568h%402x.png" />
     <ImageAsset Include="Resources\Images.xcassets\LaunchImage-1.launchimage\Contents.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Entities\" />
     <Folder Include="Database\" />
+    <Folder Include="Resources\Images.xcassets\LaunchImage.launchimage\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\Securecom.Messaging.Net.csproj">
       <Project>{2CC5830D-F86D-49A8-84F3-2E575ECB203A}</Project>
       <Name>Securecom.Messaging.Net</Name>
     </ProjectReference>
-    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom-Messageing-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj">
+    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom-Messaging-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj">
       <Project>{70BF2276-52DD-4427-B96B-8A4FDE745015}</Project>
       <Name>Securecom.Messaging.Spec</Name>
     </ProjectReference>

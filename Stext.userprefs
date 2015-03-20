@@ -1,24 +1,32 @@
 ﻿<Properties StartupItem="Stext.csproj">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="AppDelegate.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.6plus dev" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Views/RegistrationView.cs">
     <Files>
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Protocol/PushTransport.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Crypto/KeyExchangeMessageV2.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Crypto/KeyExchangeProcessorV2.cs" Line="45" Column="45" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Protocol/CiphertextMessage.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Protocol/PreKeyWhisperMessageUtil.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Protocol/WhisperMessage.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/storage/Session.cs" Line="1" Column="1" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/MessageManager.cs" Line="4" Column="4" />
-      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/EncryptionTests.cs" Line="20" Column="20" />
-      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/LiveMessageTests.cs" Line="67" Column="67" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/RatchetingSession.cs" Line="32" Column="32" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Protocol/PreKeyWhisperMessageBaseImpl.cs" Line="3" Column="3" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/MessageManagerUtil.cs" Line="105" Column="105" />
-      <File FileName="../Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/RootKey.cs" Line="37" Column="37" />
-      <File FileName="../Securecom-Messaging-CSharp/MessagingTests/AccountTests.cs" Line="24" Column="24" />
-      <File FileName="AppDelegate.cs" Line="41" Column="41" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Entities/FileStorage.cs" Line="1" Column="1" />
+      <File FileName="Table/Cells/ChatBubbleCell.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/MessageManager.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/WrongVerificationCodeException.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/AlreadyRegisteredException.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/JsonFormatException.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/TokenFormatException.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/UnknownNumberException.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/StaleDevicesException.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Entities/STextConfig.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Crypto/IdentityKeyUtil.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/MessageManagerUtil.cs" Line="1" Column="1" />
+      <File FileName="AppDelegate.cs" Line="1" Column="1" />
+      <File FileName="Views/RegistrationView.cs" Line="33" Column="3" />
+      <File FileName="Views/ConfirmationView.cs" Line="1" Column="1" />
     </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="Stext" expanded="True">
+            <Node name="Images" selected="True" />
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
@@ -52,4 +60,7 @@
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <DisabledProjects>
+    <String>Securecom-Messaging-CSharp/Securecom-Messageing-Spec/Securecom.Messaging.Spec/Securecom.Messaging.Spec.csproj</String>
+  </DisabledProjects>
 </Properties>
