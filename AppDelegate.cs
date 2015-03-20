@@ -6,7 +6,6 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 
 using Securecom.Messaging;
-using System.Text.RegularExpressions;
 using PhoneNumbers;
 using Securecom.Messaging.Net;
 
@@ -50,21 +49,13 @@ namespace Stext
 		{
 			config.MobileNumber = phoneNumber;
 			config.Password = "3sApmcX4px5tp2b9dPH46lMI";
-			config.SaveConfig();
+			config.Save();
 
 			//System.Security.Cryptography.X509Certificates.X509Certificate certificate = new System.Security.Cryptography.X509Certificates.X509Certificate("signing-ca-1.crt");
 			//_manager = new MessageManager(new Uri(config.ServerUrl), phoneNumber, null, certificate);
 		}
 
-		//private MessageManager _manager;
-
-		//public MessageManager MessageManager {
-		//	get{ return _manager; }
-		//}
-
 		public override UIWindow Window { get; set; }
-
-		private NSDictionary userSelectedNotification = null;
 
 		public override void FinishedLaunching(UIApplication application)
 		{
@@ -74,8 +65,6 @@ namespace Stext
 			alert = new Alert();
 			InitViews();
 
-			SetNavigationProperties();
-			STextConfig.Storage = new FileStorage();
 			config = STextConfig.GetInstance();
 			GoToView(GetLaunchView());
 			Window.RootViewController = rootNavigationController;
@@ -88,22 +77,17 @@ namespace Stext
 			} else {
 				UIApplication.SharedApplication.RegisterForRemoteNotificationTypes(UIRemoteNotificationType.Alert | UIRemoteNotificationType.Badge | UIRemoteNotificationType.Sound);
 			}
-			//MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage("hello again", "a@b.com"));
-		}
-
-		public void SetNavigationProperties()
-		{
 		}
 
 		private UIViewController GetLaunchView()
 		{
-			//return registrationView;
-			if (!config.Registered)
-				return registrationView;
-			return chatListView;
+			if (config.Registered)
+				return chatListView;
+			return registrationView;
 		}
 
-		private void RefreshChatListView(){
+		private void RefreshChatListView()
+		{
 			chatListView.PopulateTable();
 			chatView.refreshChat();
 
@@ -111,33 +95,31 @@ namespace Stext
 
 		public void GoToView(UIViewController view)
 		{
+			if (this.rootNavigationController == null)
+				return;
 			try {
-				if (this.rootNavigationController != null) {
-					Boolean PopView = false;
-					var controllers = this.rootNavigationController.ViewControllers;
-					foreach (var item in controllers) {
-						if (item.Equals(view)) {
-							rootNavigationController.PopToViewController(view, true);
-							PopView = true;
-							break;
-						}
-					}
-					if (!PopView) {
-						rootNavigationController.PushViewController(view, true);
+				bool popView = false;
+				foreach (var item in rootNavigationController.ViewControllers) {
+					if (item.Equals(view)) {
+						rootNavigationController.PopToViewController(view, true);
+						popView = true;
+						break;
 					}
 				}
+				if (!popView)
+					rootNavigationController.PushViewController(view, true);
 			} catch (Exception e) {
 				WriteDebugOutput(e.Message);
 			}
 		}
 
-		public void WriteDebugOutput(String outputString)
+		public static void WriteDebugOutput(String outputString)
 		{
 			Console.WriteLine(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + " - " + outputString);
 		}
 
 
-		public void InitViews()
+		private void InitViews()
 		{
 			registrationView = new RegistrationView();
 			verificationView = new VerificationView();
@@ -153,8 +135,7 @@ namespace Stext
 
 			// Create and Initialize Apple push message DB
 			// Figure out where the SQLite database will be.
-			using (var conn= new SQLite.SQLiteConnection(_pathToMessagesDatabase))
-			{
+			using (var conn = new SQLite.SQLiteConnection(_pathToMessagesDatabase)) {
 				Console.WriteLine("rkolli >>>>> Connect to Messages DB, if doesn't exist! create PushChatThread, PushMessage tables");
 				conn.CreateTable<PushChatThread>();
 				conn.CreateTable<PushMessage>();
@@ -166,8 +147,11 @@ namespace Stext
 		}
 
 		public override void OnResignActivation(UIApplication application) {}
+
 		public override void DidEnterBackground(UIApplication application) {}
+
 		public override void WillEnterForeground(UIApplication application) {}
+
 		public override void WillTerminate(UIApplication application) {}
 
 		public override void RegisteredForRemoteNotifications(UIApplication application, NSData deviceToken)
@@ -181,12 +165,6 @@ namespace Stext
 			Console.WriteLine("RegisteredForRemoteNotifications where deviceToken=" + DeviceToken);
 		}
 
-		/// <Docs>Reference to the UIApplication that invoked this delegate method.</Docs>
-		/// <summary>
-		/// Indicates that the application received a remote notification.
-		/// </summary>
-		/// <param name="application">Application.</param>
-		/// <param name="userInfo">User info.</param>
 		public override void ReceivedRemoteNotification(UIApplication application, NSDictionary userInfo)
 		{
 			Console.WriteLine("rkolli >>>>> @ReceivedRemoteNotification");
@@ -195,19 +173,12 @@ namespace Stext
 			}
 		}
 
-		public static String ProcessIncomingMessage(String msg)
+		private static String ProcessIncomingMessage(String msg)
 		{
-			String result = MessageManager.ProcessIncomingMessage(msg);
-			Console.WriteLine("result is " + result);
-			return result;
+			return MessageManager.ProcessIncomingMessage(msg);
 		}
 
-		/// <summary>
-		/// Processes the notification.
-		/// </summary>
-		/// <param name="options">Options.</param>
-		/// <param name="fromFinishedLaunching">If set to <c>true</c> from finished launching.</param>
-		public void ProcessNotification(NSDictionary options, bool fromFinishedLaunching)
+		private void ProcessNotification(NSDictionary options, bool fromFinishedLaunching)
 		{
 			Console.WriteLine("rkolli >>>>> @ProcessNotification");
 
@@ -215,7 +186,6 @@ namespace Stext
 				return;
 
 			UIApplicationState state = UIApplication.SharedApplication.ApplicationState;
-			NSDictionary aps = options.ObjectForKey(new NSString("aps")) as NSDictionary;
            
 			if (options.ContainsKey(new NSString("m"))) {
 				NSString m = options.ObjectForKey(new NSString("m")) as NSString;
@@ -242,8 +212,9 @@ namespace Stext
 			}
 		}
 
-		private void updateChatThread(string payload, string msg){
-			Console.WriteLine("rkolli >>>>> @updateChatThread, payload = "+payload);
+		private void updateChatThread(string payload, string msg)
+		{
+			Console.WriteLine("rkolli >>>>> @updateChatThread, payload = " + payload);
 			const string sender_pattern = "\"sender\":\"";
 			const string messageid_pattern = "\"messageId\":";
 			int a = payload.IndexOf(sender_pattern) + sender_pattern.Length;
@@ -253,18 +224,17 @@ namespace Stext
 			int x = payload.IndexOf(messageid_pattern) + messageid_pattern.Length;
 			int y = payload.IndexOf(",", x);
 			string messageid = payload.Substring(x, y - x);
-			Console.WriteLine("rkolli >>>>> @ProcessNotification, sender = "+sender+", messageid = "+messageid+", message body = "+msg);
+			Console.WriteLine("rkolli >>>>> @ProcessNotification, sender = " + sender + ", messageid = " + messageid + ", message body = " + msg);
 			// Figure out where the SQLite database will be.
-			using (var conn= new SQLite.SQLiteConnection(_pathToMessagesDatabase))
-			{
+			using (var conn = new SQLite.SQLiteConnection(_pathToMessagesDatabase)) {
 				int present_thread_id = 0;
 				// Check if there is an existing thread for this sender
 				List<PushChatThread> pctList = conn.Query<PushChatThread>("select * from PushChatThread");
 
 				if (pctList != null && pctList.Count > 0) {
 					foreach (PushChatThread pct in pctList) {
-						Console.WriteLine("rkolli >>>>> @updateChatThread"+", Count = " + pctList.Count);
-						Console.WriteLine("rkolli >>>>> @updateChatThread"+", Number = " + pct.Number + ", Sender = " + sender + ", ID = " + pct.ID);
+						Console.WriteLine("rkolli >>>>> @updateChatThread" + ", Count = " + pctList.Count);
+						Console.WriteLine("rkolli >>>>> @updateChatThread" + ", Number = " + pct.Number + ", Sender = " + sender + ", ID = " + pct.ID);
 						var number = pct.Number;
 						if (!number.Contains("@")) {
 							var phoneUtil = PhoneNumberUtil.GetInstance();
@@ -284,27 +254,42 @@ namespace Stext
 				}
 
 				if (present_thread_id == 0) {
-					var pct_val = new PushChatThread{Number = sender, Recipient_id = 0, TimeStamp = Convert.ToInt64(messageid), Message_count = 1, Snippet = msg, Read = 1, Type = "Push"};
+					var pct_val = new PushChatThread {
+						Number = sender,
+						Recipient_id = 0,
+						TimeStamp = Convert.ToInt64(messageid),
+						Message_count = 1,
+						Snippet = msg,
+						Read = 1,
+						Type = "Push"
+					};
 					conn.Insert(pct_val);
 					present_thread_id = pct_val.ID;
 					//conn.Execute("UPDATE PushChatThread Set Recipient_id = ? WHERE Number = ?", present_thread_id, sender);
-					Console.WriteLine("rkolli >>>>> @updateChatThread, inserting new chat row, present_thread_id = " +present_thread_id);
+					Console.WriteLine("rkolli >>>>> @updateChatThread, inserting new chat row, present_thread_id = " + present_thread_id);
 				}
 				Console.WriteLine("rkolli >>>>> inserting message into the DB");
 
-				var pmessage = new PushMessage{Thread_id = present_thread_id, Number = sender, TimeStamp = CurrentTimeMillis(), TimeStamp_Sent = Convert.ToInt64(messageid), Read = 1, Message = msg, Status = true, Service = "Push"};
+				var pmessage = new PushMessage {
+					Thread_id = present_thread_id,
+					Number = sender,
+					TimeStamp = CurrentTimeMillis(),
+					TimeStamp_Sent = Convert.ToInt64(messageid),
+					Read = 1,
+					Message = msg,
+					Status = true,
+					Service = "Push"
+				};
 				conn.Insert(pmessage);
 				conn.Commit();
 				conn.Close();
 			}
 			RefreshChatListView();
-//			UIAlertView alert = new UIAlertView("New Securecom Message ", msg, null, "Ok");
-//			alert.Show();
 		}
 
 		public static long CurrentTimeMillis()
 		{
-			return (long) (DateTime.UtcNow -  new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
+			return (long)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
 		}
 	}
 }

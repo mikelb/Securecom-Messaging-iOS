@@ -1,9 +1,6 @@
 ﻿
 using System;
 
-
-
-
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -87,7 +84,7 @@ namespace Stext
 				img4.Hidden = false;
 				STextConfig cfg = STextConfig.GetInstance();
 				cfg.Registered = true;
-				cfg.SaveConfig();
+				cfg.Save();
 				break;
 			case STATE_GO_TO_CHATVIEW:
 				appDelegate.GoToView(appDelegate.chatListView);
