@@ -356,11 +356,22 @@ namespace Stext
 					foreach (Contact c in book) {
 						if (c.Phones.Any()) {
 							foreach (Phone p in c.Phones) {
-								if (_m.Number.Equals(p.Number)) {
-									display_name = c.DisplayName;
-									thumbnail = c.GetThumbnail();
+								string number = "";
+								if (!p.Number.Contains("*") || !p.Number.Contains("#")) {
+									try{
+										var phoneUtil = PhoneNumberUtil.GetInstance();
+										PhoneNumber numberObject = phoneUtil.Parse(p.Number, "US");
+										number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
+
+										if (_m.Number.Equals(number)) {
+											display_name = c.DisplayName;
+											thumbnail = c.GetThumbnail();
+											break;
+										}
+									}catch(Exception e){
+										Console.WriteLine("Exception: "+e.Message);
+									}
 								}
-								break;
 							}
 						}
 
@@ -369,8 +380,8 @@ namespace Stext
 								if (_m.Number.Equals(e.Address)) {
 									display_name = c.DisplayName;
 									thumbnail = c.GetThumbnail();
+									break;
 								}
-								break;
 							}
 						}
 					}
@@ -445,8 +456,8 @@ namespace Stext
 				Console.WriteLine("Error while deleting thread "+e.Message);
 			}
 			ShowEditButton();
-			UIAlertView alert = new UIAlertView("Deleted Conversation with", ""+selectedCell.GetNumber(), null, "Ok");
-			alert.Show();
+//			UIAlertView alert = new UIAlertView("Deleted Conversation with", ""+selectedCell.GetNumber(), null, "Ok");
+//			alert.Show();
 		}
 
 		private void ComposeAction()
