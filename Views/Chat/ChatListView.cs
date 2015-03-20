@@ -28,6 +28,7 @@ namespace Stext
 		AppDelegate appDelegate;
 		private CustomCellGroup tableCellGroup;
 		private CustomCellTableSource source;
+		private List<PushChatThread> pct;
 
 		public ChatListView()
 			: base("ChatListView", null)
@@ -74,10 +75,57 @@ namespace Stext
 				search.Text = "";
 				search.ResignFirstResponder();
 				search.SetShowsCancelButton(false, true);
+				PopulateTable();
 			};
 
 			search.TextChanged += async (object sender, UISearchBarTextChangedEventArgs e) => {
 				search.SetShowsCancelButton(true, true);
+				string searchText = e.SearchText.ToLower();
+				Console.WriteLine("Search text = " + e.SearchText);
+				if(!e.SearchText.Equals("")){
+					List<CustomCellGroup> mCellGroups = new List<CustomCellGroup>();
+					CustomCellGroup mTableCellGroup = new CustomCellGroup { Name = "No Results" };
+					int count = 0;
+
+					foreach (PushChatThread _c in pct) {
+						Console.WriteLine("Db Contacts = " + _c.Number);
+						bool found = false;
+						if (!String.IsNullOrEmpty(_c.Number)) {
+
+							found |= _c.Number.ToLower().Contains(searchText) || _c.DisplayName.ToLower().Contains(searchText); 
+
+							if(found)
+							{
+								mTableCellGroup.Name = "Search Results";
+								Console.WriteLine("rkolli >>>>> Search result, Contact display name = " + _c.DisplayName);
+								ChatCell chatCell = ChatCell.Create();
+								chatCell.SetHeader(_c.DisplayName+" ("+_c.Number+")");
+								chatCell.SetSubheading(_c.Snippet);
+								chatCell.SetThreadID(_c.ID);
+								chatCell.SetNumber(_c.Number);
+								chatCell.SetAvatar(null);
+								DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(_c.TimeStamp/1000).ToLocalTime();
+								Console.WriteLine("rkolli >>>>> Time after format is "+epoch.ToString("HH:mm"));
+								chatCell.SetLabelTime("" + epoch.ToString("HH:mm"));
+								chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+								mTableCellGroup.Cells.Insert(count, chatCell);
+								count++;
+							}
+						}
+					}
+
+
+					mCellGroups.Add(mTableCellGroup);
+
+					source = new CustomCellTableSource(mCellGroups);
+					source.RowSelectedAction = RowSelected;
+					source.DeleteAction = DeleteSelected;
+					source.DeleteTitle = "Delete";
+					table.Source = source;
+					table.ReloadData();
+				}else{
+					PopulateTable();
+				}
 			};
 
 		}
@@ -85,7 +133,6 @@ namespace Stext
 
 		private void SettingsAction(){
 			try{
-
 				UIActionSheet actionSheet;
 				actionSheet = new UIActionSheet ();
 
@@ -270,7 +317,6 @@ namespace Stext
 		{
 			table.ReloadData();
 
-			List<PushChatThread> pm;
 			UIImage thumbnail = null;
 
 			List<CustomCellGroup> cellGroups = new List<CustomCellGroup>();
@@ -280,9 +326,9 @@ namespace Stext
 			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
 				bool headerExists = false;
 				Console.WriteLine("rkolli >>>>> @PopulateTable, fetching messages");
-				pm = conn.Query<PushChatThread>("SELECT * FROM PushChatThread ORDER BY TimeStamp DESC");
+				pct = conn.Query<PushChatThread>("SELECT * FROM PushChatThread ORDER BY TimeStamp DESC");
 				int count = 0;
-				foreach (PushChatThread _m in pm) {
+				foreach (PushChatThread _m in pct) {
 					Console.WriteLine("Db APMessages, Number = " + _m.Number+", message id = "+_m.TimeStamp+", Message Body = "+_m.Snippet+", ID = "+_m.ID+", Read = "+_m.Read);
 //					List<ICustomCell> temp = tableCellGroup.Cells;
 //					foreach (ChatCell icc in temp) {
@@ -331,6 +377,7 @@ namespace Stext
 
 
 					//if (!headerExists) {
+						conn.Execute("UPDATE PushChatThread Set DisplayName = ? WHERE ID = ?", display_name, _m.ID);
 						ChatCell chatCell = ChatCell.Create();
 						chatCell.SetHeader(display_name+" ("+_m.Number+")");
 						chatCell.SetSubheading(_m.Snippet);

@@ -12,6 +12,7 @@ using Securecom.Messaging;
 using System.Threading;
 using System.Text.RegularExpressions;
 using PhoneNumbers;
+using System.Threading.Tasks;
 
 namespace Stext{
 
@@ -77,9 +78,12 @@ namespace Stext{
 				tableCellGroup.Cells.Add (cell);
 			}
 
-			if(_cell != null){
-				tableCellGroup.Cells.Add (_cell);
-			}
+			if (_cell != null) {
+				tableCellGroup.Cells.Add(_cell);
+			} 
+
+			SetTableSize();
+
 
 //			//Pending
 //			cell = new ChatBubbleCell(false);
@@ -92,8 +96,6 @@ namespace Stext{
 //			cell.Update ("This is a undelivered cell", "8:05 PM");
 //			cell.SetAsUndelivered ();
 //			tableCellGroup.Cells.Add (cell);
-
-			SetTableSize();
 
 			source = new CustomCellTableSource(cellGroups);
 			source.RowSelectedAction = RowSelected;
@@ -118,8 +120,6 @@ namespace Stext{
 			}catch(Exception e){
 				Console.WriteLine("Error while deleting thread "+e.Message);
 			}
-			UIAlertView alert = new UIAlertView("Deleted", ""+indexPath.Row, null, "Ok");
-			alert.Show();
 		}
 
 		public void RowSelected(UITableView tableView, NSIndexPath indexPath){
@@ -131,6 +131,8 @@ namespace Stext{
 			if (ThreadID != 0) {
 				table.ReloadData();
 				AddDataToConversation();
+				PointF pf = new PointF (0f, (messages.Count + 2) * 64 - table.Bounds.Size.Height);
+				table.SetContentOffset(pf, true);
 				LoadTable(null);
 			}
 		}
@@ -211,7 +213,6 @@ namespace Stext{
 			accessoryToolbar.Frame = accessTlbrFrame;
 
 		}
-
 
 		private void AddPhoto(){
 			try{
@@ -351,36 +352,23 @@ namespace Stext{
 
 
 		private void SendMessage(bool isattachment){
-
-//			messages.Add (accessoryTextView.Text);
-//			timeStamps.Add(now.ToString("t"));
-//			isLeft.Add(false);
-
-
-//			ThreadStart childref = new ThreadStart(SendMessageThread);
-//			Thread childThread = new Thread(childref);
-//			childThread.Start();
-
+			if (string.IsNullOrEmpty(accessoryTextView.Text)) {
+				return;
+			}
 			InvokeOnMainThread(delegate {
-				SendMessageThread(isattachment);
+				string message = string.Copy(accessoryTextView.Text);
+				new System.Threading.Thread(new System.Threading.ThreadStart(() => InvokeOnMainThread(() => SendMessageThread(isattachment, message)))).Start();
+				accessoryTextView.Text = "";
+				inputFakeMessage.Text = "Start Typing...";
 			});
-
-			//cell.SetAsSent();
-
-			ResignFirstResponders ();
-			accessoryTextView.Text = "";
-			inputFakeMessage.Text = "Start Typing...";
-			
-			LoadTable(null);
-
 		}
 
-		private void SendMessageThread(bool isattachment){
+		private async void SendMessageThread(bool isattachment, string message){
 			DateTime now = DateTime.Now;
 			string format = "ddd HH:mm tt";
 			bool delivered = false;
 			try{
-				MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage(accessoryTextView.Text, Number));
+				MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage(message, Number));
 				delivered = true;
 			}catch(Exception e){
 				Console.WriteLine("Exception while sending message...."+e.Message);
@@ -388,17 +376,17 @@ namespace Stext{
 
 			using (var conn= new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase))
 			{
-				var pmessage = new PushMessage{Thread_id = ThreadID, Number = Number, TimeStamp = AppDelegate.CurrentTimeMillis(), TimeStamp_Sent = Convert.ToInt64(AppDelegate.CurrentTimeMillis()), Read = 0, Message = accessoryTextView.Text, Status = delivered, Service = "PushLocal"};
+				var pmessage = new PushMessage{Thread_id = ThreadID, Number = Number, TimeStamp = AppDelegate.CurrentTimeMillis(), TimeStamp_Sent = Convert.ToInt64(AppDelegate.CurrentTimeMillis()), Read = 0, Message = message, Status = delivered, Service = "PushLocal"};
 				conn.Insert(pmessage);
 				conn.Commit();
 				conn.Close();
 			}
 
-			PointF pf = new PointF (0f, (messages.Count - 1) * TableRowHeight - table.Bounds.Size.Height);
+			PointF pf = new PointF (0f, (messages.Count + 3) * 64 - table.Bounds.Size.Height);
 			table.SetContentOffset(pf, true);
 
 			ChatBubbleCell cell = new ChatBubbleCell(false, false, delivered);
-			cell.Update (accessoryTextView.Text, now.ToString(format));
+			cell.Update (message, now.ToString(format));
 			TableRowHeight = cell.getHeight();
 			if(!delivered)
 				cell.SetAsUndelivered();
@@ -412,13 +400,13 @@ namespace Stext{
 
 		public override void ViewWillAppear (bool animated){
 			this.Title = ThreadSelected;
-			AddDataToConversation ();
-			this.LoadTable (null);
+			refreshChat();
 			base.ViewWillAppear (animated);
 		}
 
 		public override void ViewWillDisappear (bool animated){
 			setThreadID(0);
+			ResignFirstResponders();
 		}
 
 
@@ -542,22 +530,23 @@ namespace Stext{
 			accessoryCreateButton.Clicked += (sender, e) => {
 				SendMessage(false);
 				accessoryTextView.Text = "";
-				ResignFirstResponders();
 				AnimateToolbar();
 				InitExpandableTextView();
+				accessoryCreateButton.Enabled = true;
 			};
 
 			accessoryTextView.Changed += (sender, e) => {
 				SetExpandableTextViewSize();
-				if(accessoryTextView.Text.Length >= 1){
-					accessoryCreateButton.Enabled = true;
-				}else{
-					accessoryCreateButton.Enabled = false;
-				}
-
-				if(accessoryTextView.Text == " "){
-					accessoryCreateButton.Enabled = false;
-				}
+				accessoryCreateButton.Enabled = true;
+//				if(accessoryTextView.Text.Length >= 1){
+//					accessoryCreateButton.Enabled = true;
+//				}else{
+//					accessoryCreateButton.Enabled = false;
+//				}
+//
+//				if(accessoryTextView.Text == " "){
+//					accessoryCreateButton.Enabled = false;
+//				}
 
 			};	
 
@@ -612,10 +601,6 @@ namespace Stext{
 			if (table.Editing) {
 				table.SetEditing(false,true);
 			}
-
-//			if(source != null)
-//				source.WillBeginTableEditing(table);
-
 			table.SetEditing(true,true);
 
 			if (NavigationController.NavigationBar.BackItem != null) {

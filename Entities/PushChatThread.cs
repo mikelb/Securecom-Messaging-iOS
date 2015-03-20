@@ -14,6 +14,7 @@ namespace Stext
 		public string Snippet {get; set; }
 		public int Read {get; set; }
 		public string Type{ get; set; }
+		public string DisplayName{ get; set; }
 	}
 }
 

@@ -147,7 +147,7 @@ namespace Stext
 			};
 
 			this.Continue.TouchUpInside += (sender, e) => {
-				String phoneNumber = "";
+				String phoneNumber = PhPhoneNumberInput.Text;
 				bool isEmail = false;
 				phoneNumber = (registerMode == 0) ? PhPhoneNumberInput.Text : EmEmailInput.Text;
 				isEmail = (registerMode != 0);
