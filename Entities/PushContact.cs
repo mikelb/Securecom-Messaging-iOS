@@ -8,6 +8,7 @@ namespace Stext
 		public int ID { get; set; }
 		[SQLite.Unique]
 		public string  Number { get; set; }
+		public string  Name { get; set; }
 	}
 }
 
