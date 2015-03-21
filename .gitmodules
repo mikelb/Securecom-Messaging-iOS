@@ -1,4 +1,4 @@
 [submodule "Securecom-Messaging-CSharp"]
 	path = Securecom-Messaging-CSharp
 	url = https://github.com/Securecom/Securecom-Messaging-CSharp.git
-	branch = cleanup
+	branch = master
