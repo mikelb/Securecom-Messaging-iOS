@@ -16,6 +16,7 @@ using Org.BouncyCastle.Utilities.Encoders;
 using Securecom.Messaging;
 using System.IO;
 using MonoTouch.AddressBook;
+using Securecom.Messaging.Net;
 
 namespace Stext
 {
@@ -184,6 +185,7 @@ namespace Stext
 									conn1.Commit();
 									conn1.Close();
 								}
+								Session.ClearSessions();
 								appDelegate.GoToView(appDelegate.registrationView);
 							}
 						};

@@ -96,9 +96,6 @@
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
     <Reference Include="MonoTouch.Dialog-1" />
-    <Reference Include="protobuf-net">
-      <HintPath>Securecom-Messaging-CSharp\Securecom-Messaging-Spec\3rdParty\protobuf-net.dll</HintPath>
-    </Reference>
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\3rdParty\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
@@ -110,9 +107,6 @@
     </Reference>
     <Reference Include="Mono.Data.Sqlite" />
     <Reference Include="System.Data" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>Securecom-Messaging-CSharp\Securecom-Messaging-Spec\3rdParty\Newtonsoft.Json.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Images\Titlebar\chat.png" />
@@ -329,10 +323,6 @@
     <ProjectReference Include="Securecom-Messaging-CSharp\Securecom.Messaging.CSharp\Securecom.Messaging.Net.csproj">
       <Project>{2CC5830D-F86D-49A8-84F3-2E575ECB203A}</Project>
       <Name>Securecom.Messaging.Net</Name>
-    </ProjectReference>
-    <ProjectReference Include="Securecom-Messaging-CSharp\Securecom-Messaging-Spec\Securecom.Messaging.Spec\Securecom.Messaging.Spec.csproj">
-      <Project>{70BF2276-52DD-4427-B96B-8A4FDE745015}</Project>
-      <Name>Securecom.Messaging.Spec</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

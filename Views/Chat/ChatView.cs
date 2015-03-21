@@ -13,6 +13,7 @@ using System.Threading;
 using System.Text.RegularExpressions;
 using PhoneNumbers;
 using System.Threading.Tasks;
+using Securecom.Messaging.Net;
 
 namespace Stext{
 
@@ -370,7 +371,10 @@ namespace Stext{
 			try{
 				MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage(message, Number));
 				delivered = true;
+			} catch (StaleDevicesException e) {
+				MessageManager.EndSession(Number);
 			}catch(Exception e){
+				
 				Console.WriteLine("Exception while sending message...."+e.Message);
 			}
 
