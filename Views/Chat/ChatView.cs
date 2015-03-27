@@ -366,7 +366,7 @@ namespace Stext{
 
 		private async void SendMessageThread(bool isattachment, string message){
 			DateTime now = DateTime.Now;
-			string format = "ddd HH:mm tt";
+			const string format = "ddd HH:mm tt";
 			bool delivered = false;
 			try{
 				MessageManager.SendMessage(MessageManager.PrepareOutgoingMessage(message, Number));
@@ -693,7 +693,6 @@ namespace Stext{
 				PhoneNumber numberObject = phoneUtil.Parse(value, "US");
 				number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
 			}
-
 			Number = number;
 		}
 	}

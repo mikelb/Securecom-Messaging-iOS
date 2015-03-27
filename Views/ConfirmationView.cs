@@ -16,6 +16,7 @@ using System.Net;
 using Securecom.Messaging;
 using Securecom.Messaging.Net;
 using Xamarin.Contacts;
+using Securecom.Messaging.Utils;
 
 namespace Stext
 {
@@ -218,31 +219,28 @@ namespace Stext
 		public static void RefreshPushDirectory(){
 			AddressBook book = new AddressBook();
 			List<String> contactlist = new List<String>();
+			var phoneUtil = PhoneNumberUtil.GetInstance();
 			book.RequestPermission().ContinueWith(t => {
 				if (!t.Result) {
 					Console.WriteLine("Permission denied by user or manifest");
 					return;
 				}
-
-				int counter = 0;
-				int contact_count = book.Count();
-				Console.WriteLine("rkolli >>>>> @RefreshPushDirectory, Address book count = " + contact_count);
+				Console.WriteLine("rkolli >>>>> @RefreshPushDirectory, Address book count = " + book.Count());
 
 				foreach (Contact contact in book.OrderBy(c => c.LastName)) {
-					int idx = counter++;
-					if (!String.IsNullOrEmpty(contact.DisplayName)) {
-						foreach (Phone value in contact.Phones) {
-							if (!value.Number.Contains("*") || !value.Number.Contains("#")) {
-								var phoneUtil = PhoneNumberUtil.GetInstance();
-								PhoneNumber numberObject = phoneUtil.Parse(value.Number, "US");
-								var number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
-								Console.WriteLine("rkolli >>>>> Number before format = "+value.Number+", after format = "+number);
-								contactlist.Add(number);
-							}
+					if (String.IsNullOrEmpty(contact.DisplayName))
+						continue;
+					foreach (Phone value in contact.Phones) {
+						if (value.Number.Contains("*") || value.Number.Contains("#"))
+							continue;
+						Console.WriteLine("phone number: " + value.Number);
+						try {
+							contactlist.Add(phoneUtil.Format(phoneUtil.Parse(value.Number, "US"), PhoneNumberFormat.E164));
+						} catch (Exception e) {
 						}
-						foreach (Email value in contact.Emails) {
-							contactlist.Add(value.Address);
-						}
+					}
+					foreach (Email value in contact.Emails) {
+						contactlist.Add(value.Address);
 					}
 
 				}
@@ -291,13 +289,10 @@ namespace Stext
 
 		private static string getDirectoryServerToken(string e164number)
 		{
-			byte[] number = System.Text.Encoding.Default.GetBytes(e164number);
+			byte[] number = Encoding.Default.GetBytes(e164number);
 			SHA1 sha1 = SHA1.Create();
-			byte[] hash = sha1.ComputeHash(number);
-			byte[] hash_10 = new byte[10];
-			Array.Copy(hash, hash_10, 10);
-
-			return Encoding.ASCII.GetString(Base64.Encode(hash_10));
+			byte[] hash = Utils.Split(sha1.ComputeHash(number), 0, 10);
+			return Encoding.ASCII.GetString(Base64.Encode(hash));
 		}
 
 		private void SetContent()
