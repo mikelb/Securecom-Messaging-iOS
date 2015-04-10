@@ -138,6 +138,8 @@ namespace Stext
 			var g = new UITapGestureRecognizer(() => View.EndEditing(true));
 			View.AddGestureRecognizer(g);
 
+			confCodeInput.Selected = true;
+
 			done.TouchUpInside += (sender, e) => {
 				confCodeInput.ShouldReturn += (textField) => { 
 					textField.ResignFirstResponder();
@@ -195,11 +197,9 @@ namespace Stext
 							preference.LocalNumber = this.appDelegate.registrationView.PhPhoneNumberInput.Text;
 						});
 
-						Console.WriteLine("rkolli @ STATE_REGISTERING_WITH_SERVER");
-
 						// Do Directory sync
 						try{
-							RefreshPushDirectory();
+							StextUtil.RefreshPushDirectory();
 						}catch(Exception e){
 							Console.WriteLine("Exception Thrown At "+e.ToString());
 						}
@@ -214,85 +214,6 @@ namespace Stext
 					});
 				}
 			});
-		}
-
-		public static void RefreshPushDirectory(){
-			AddressBook book = new AddressBook();
-			List<String> contactlist = new List<String>();
-			var phoneUtil = PhoneNumberUtil.GetInstance();
-			book.RequestPermission().ContinueWith(t => {
-				if (!t.Result) {
-					Console.WriteLine("Permission denied by user or manifest");
-					return;
-				}
-				Console.WriteLine("rkolli >>>>> @RefreshPushDirectory, Address book count = " + book.Count());
-
-				foreach (Contact contact in book.OrderBy(c => c.LastName)) {
-					if (String.IsNullOrEmpty(contact.DisplayName))
-						continue;
-					foreach (Phone value in contact.Phones) {
-						if (value.Number.Contains("*") || value.Number.Contains("#"))
-							continue;
-						Console.WriteLine("phone number: " + value.Number);
-						try {
-							contactlist.Add(phoneUtil.Format(phoneUtil.Parse(value.Number, "US"), PhoneNumberFormat.E164));
-						} catch (Exception e) {
-						}
-					}
-					foreach (Email value in contact.Emails) {
-						contactlist.Add(value.Address);
-					}
-
-				}
-				Dictionary<string,string> tokens = getDirectoryServerTokenDictionary(contactlist);
-				List<String> list = new List<String>();
-				foreach (string key in tokens.Keys)
-					list.Add(key);
-				Console.WriteLine("intersecting " + list);
-				List<String> response = MessageManager.RetrieveDirectory(list);
-				List<String> result = new List<String>();
-				foreach (string key in response) {
-					if (tokens[key] != null)
-						result.Add(tokens[key]);
-				}
-				Console.WriteLine("rkolli >>>>> we're here 1");
-				// Figure out where the SQLite database will be.
-				using (var conn= new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase))
-				{
-					Console.WriteLine("rkolli >>>>> we're here 2");
-					foreach(String contact in result){
-						Console.WriteLine("we're here, push contact = " + contact);
-						var pcontact = new PushContact{Number = contact};
-						conn.Insert(pcontact);
-					}
-				}
-
-				Console.WriteLine("rkolli >>>>> we're here 3");
-
-			}, TaskScheduler.Current);
-		}
-
-		public static Dictionary<string,string> getDirectoryServerTokenDictionary(List<string> e164numbers)
-		{
-			Dictionary<string,string> tokenDictionary = new Dictionary<string,string>(e164numbers.Count());
-			foreach (String number in e164numbers) {
-				try {
-					String tokenWithPadding = getDirectoryServerToken(number);
-					string token = tokenWithPadding.Substring(0, tokenWithPadding.Length - 2);
-					tokenDictionary.Add(token, number);
-				} catch (Exception e) {
-
-				}
-			}
-			return tokenDictionary;
-		}
-
-		private static string getDirectoryServerToken(string e164number)
-		{
-			byte[] number = Encoding.Default.GetBytes(e164number);
-			SHA1 sha1 = SHA1.Create();
-			byte[] hash = Utils.Split(sha1.ComputeHash(number), 0, 10);
-			return Encoding.ASCII.GetString(Base64.Encode(hash));
 		}
 
 		private void SetContent()

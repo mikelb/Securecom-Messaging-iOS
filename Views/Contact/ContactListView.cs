@@ -26,7 +26,7 @@ namespace Stext
 		private CustomCellTableSource source;
 		//private Directory<String, CustomCellGroup> cellgroups;
 		private List<CustomCellGroup> cellGroups;
-		private static bool isOnlySecurecomContacts = true;
+		private static bool SecurecomContactsOnly = true;
 		private string filter;
 
 #region entity fields
@@ -133,36 +133,25 @@ namespace Stext
 			List<CustomCellGroup> mCellGroups = new List<CustomCellGroup>();
 			List<PushContact> pc;
 			CustomCellGroup mTableCellGroup = new CustomCellGroup { Name = "No Results" };
-
-			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase)) {
+			using (var conn = new SQLite.SQLiteConnection(AppDelegate._dbPath)) {
 				pc = conn.Query<PushContact>("select * from PushContact");
 			}
-
 			foreach (PushContact _c in pc) {
-				Console.WriteLine("Db Contacts = " + _c.Number);
-				bool found = false;
-				if (!String.IsNullOrEmpty(_c.Name)) {
-
-					found |= _c.Name.ToLower().Contains(searchText) || _c.Number.Contains(searchText); 
-
-					if (found) {
-						mTableCellGroup.Name = "Search Results";
-						Console.WriteLine("rkolli >>>>> Search result, Contact display name = " + _c.Name);
-						ContactListCell cell = ContactListCell.Create();
-						cell.SetName(_c.Name);
-						if (!_c.Number.Contains("@")) {
-							cell.SetPhone(_c.Number);
-						} else {
-							cell.SetEmail(_c.Number);
-						}
-						mTableCellGroup.Cells.Add(cell);
+				if (String.IsNullOrEmpty(_c.Name))
+					continue;
+				if (_c.Name.ToLower().Contains(searchText) || _c.Number.Contains(searchText)) {
+					mTableCellGroup.Name = "Search Results";
+					ContactListCell cell = ContactListCell.Create();
+					cell.SetName(_c.Name);
+					if (_c.Number.Contains("@")) {
+						cell.SetEmail(_c.Number);
+					} else {
+						cell.SetPhone(_c.Number);
 					}
+					mTableCellGroup.Cells.Add(cell);
 				}
 			}
-			
-
 			mCellGroups.Add(mTableCellGroup);
-
 			source = new CustomCellTableSource(mCellGroups);
 			source.RowSelectedAction = RowSelected;
 			table.Source = source;
@@ -171,54 +160,46 @@ namespace Stext
 		private void ProcessSearchOnAllContacts(string searchText)
 		{
 			List<CustomCellGroup> mCellGroups = new List<CustomCellGroup>();
-			CustomCellGroup mTableCellGroup = new CustomCellGroup { Name = "No Results" };
+			CustomCellGroup mTableCellGroup = new CustomCellGroup();
 			AddressBook book = new AddressBook();
 			foreach (Contact contact in book.OrderBy(c => c.DisplayName)) {
+				if (String.IsNullOrEmpty(contact.DisplayName))
+					continue;
 				bool found = false;
-				if (!String.IsNullOrEmpty(contact.DisplayName)) {
-					//Decide contact group based on the first character
-					String group = contact.DisplayName.Substring(0, 1).ToUpper();
-					if (contact.DisplayName.ToLower().Contains(searchText)) {
-						found = true;
-					} else if (contact.Phones.Any() || contact.Emails.Any()) {
-							foreach (Phone p in contact.Phones) {
-								String temp = p.Number;
-								temp = temp.Replace("(", string.Empty);
-								temp = temp.Replace(")", string.Empty);
-								temp = temp.Replace("-", string.Empty);
-								temp = temp.Replace(" ", string.Empty);
-								found |= temp.Contains(searchText);
-							}
-
-							foreach (Email email in contact.Emails) {
-								found |= email.Address.ToLower().Contains(searchText);
-							}
-						}
-
-					if (found) {
-						mTableCellGroup.Name = "Search Results";
-						Console.WriteLine("rkolli >>>>> Adding Contacts, group = " + group);
-						Console.WriteLine("rkolli >>>>> Search result, Contact display name = " + contact.DisplayName);
-						ContactListCell cell = ContactListCell.Create();
-						cell.SetName(contact.DisplayName);
-						foreach (Phone p in contact.Phones) {
-							Console.WriteLine("rkolli >>>>> Search result, Contact Number = " + p.Number);
-							cell.SetPhone(p.Number);
-							break;
-						}
-						foreach (Email email in contact.Emails) {
-							Console.WriteLine("rkolli >>>>> Search result, Contact Email = " + email.Address);
-							cell.SetEmail(email.Address);
-							break;
-						}
-
-						mTableCellGroup.Cells.Add(cell);
+				//Decide contact group based on the first character
+				String group = contact.DisplayName.Substring(0, 1).ToUpper();
+				if (contact.DisplayName.ToLower().Contains(searchText)) {
+					found = true;
+				} else if (contact.Phones.Any()) {
+					foreach (Phone p in contact.Phones) {
+						String temp = p.Number
+							.Replace("(", string.Empty)
+							.Replace(")", string.Empty)
+							.Replace("-", string.Empty)
+							.Replace(" ", string.Empty);
+						found |= temp.Contains(searchText);
+					}
+				} else if (contact.Emails.Any()) {
+					foreach (Email e in contact.Emails) {
+						found |= e.Address.ToLower().Contains(searchText);
 					}
 				}
+				if (!found)
+					continue;
+				ContactListCell cell = ContactListCell.Create();
+				cell.SetName(contact.DisplayName);
+				foreach (Phone p in contact.Phones) {
+					cell.SetPhone(p.Number);
+					break;
+				}
+				foreach (Email e in contact.Emails) {
+					cell.SetEmail(e.Address);
+					break;
+				}
+				mTableCellGroup.Cells.Add(cell);
 			}
-
+			mTableCellGroup.Name = mTableCellGroup.Cells.Count == 0 ? "No Results" : "Search Results";
 			mCellGroups.Add(mTableCellGroup);
-
 			source = new CustomCellTableSource(mCellGroups);
 			source.RowSelectedAction = RowSelected;
 			table.Source = source;
@@ -238,20 +219,8 @@ namespace Stext
 			UIActionSheet actionSheet;
 			actionSheet = new UIActionSheet();
 
-			if (!isOnlySecurecomContacts) {
-				try {
-					actionSheet.AddButton("Securecom users");
-					actionSheet.AddButton("Cancel");
-					actionSheet.Clicked += delegate(object a, UIButtonEventArgs b) {
-						if (b.ButtonIndex == (0)) {
-							PopulateTable("Securecom users");
-						} 
-					};
-					actionSheet.ShowInView(View);
-				} catch (Exception ex) {
-					Console.Write(ex.Message);
-				}
-			} else {
+			if (SecurecomContactsOnly) {
+				SecurecomContactsOnly = false;
 				try {
 					actionSheet.AddButton("Show All");
 					actionSheet.AddButton("Cancel");
@@ -264,12 +233,70 @@ namespace Stext
 				} catch (Exception ex) {
 					Console.Write(ex.Message);
 				}
+			} else {
+				SecurecomContactsOnly = true;
+				try {
+					actionSheet.AddButton("Securecom users");
+					actionSheet.AddButton("Cancel");
+					actionSheet.Clicked += delegate(object a, UIButtonEventArgs b) {
+						if (b.ButtonIndex == (0)) {
+							PopulateTable("Securecom users");
+						} 
+					};
+					actionSheet.ShowInView(View);
+				} catch (Exception ex) {
+					Console.Write(ex.Message);
+				}
 			}
 		}
 
 		private void AddContactsData(String contactFilter)
 		{
-			List<String> contactlist = new List<String>();
+
+			// Figure out where the SQLite database will be.
+			bool showAll = contactFilter != "Securecom users";
+			var conn = new SQLite.SQLiteConnection(AppDelegate._dbPath);
+			List<PushContact> pc = conn.Query<PushContact>("select * from PushContact");
+			conn.Close();
+			List<String> registeredContacts = new List<String>();
+			List<String> groups = new List<String>();
+			foreach (PushContact c in pc)
+				registeredContacts.Add(c.Number);
+			var phoneUtil = PhoneNumberUtil.GetInstance();
+			if (!showAll) {
+				Dictionary<String, List<String>> map = new Dictionary<String, List<String>>();
+				foreach (PushContact c in pc) {
+					String n = c.Name ?? c.Number;
+					if (!map.ContainsKey(n))
+						map[n] = new List<String>();
+					map[n].Add(c.Number);
+				}
+				foreach (KeyValuePair<String, List<String>> entry in map.OrderBy(c => c.Key)) {
+					String group = entry.Key.Substring(0, 1).ToUpper();
+					bool newGroup = !groups.Contains(group);
+					foreach (CustomCellGroup ccg in cellGroups) {
+						if (ccg.Name.Equals(group)) {
+							newGroup = false;
+							tableCellGroup = ccg;
+						}
+					}
+					ContactListCell cell = ContactListCell.Create();
+					cell.SetName(entry.Key);
+					foreach (String number in entry.Value) {
+						if (number.Contains("@"))
+							cell.SetEmail(number);
+						else
+							cell.SetPhone(number);
+					}
+					if (newGroup) {
+						tableCellGroup = new CustomCellGroup { Name = group };
+						cellGroups.Add(tableCellGroup);
+					}
+					tableCellGroup.Cells.Add(cell);
+				}
+				return;
+			}
+
 			AddressBook book = new AddressBook();
 			book.RequestPermission().ContinueWith(t => {
 				if (!t.Result) {
@@ -278,25 +305,13 @@ namespace Stext
 				}
 			}, TaskScheduler.FromCurrentSynchronizationContext());
 
-			// Figure out where the SQLite database will be.
-			bool showAll = contactFilter != "Securecom users";
-			var conn = new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase);
-			List<PushContact> pc = conn.Query<PushContact>("select * from PushContact");
-			List<String> registeredContacts = new List<String>();
-			List<String> groups = new List<String>();
-			foreach (PushContact c in pc)
-				registeredContacts.Add(c.Number);
-			var phoneUtil = PhoneNumberUtil.GetInstance();
 			foreach (Contact contact in book.OrderBy(c => c.DisplayName)) {
 				if (!showAll && registeredContacts.Count == 0)
 					break;
 				if (String.IsNullOrEmpty(contact.DisplayName))
 					continue;
 				String group = contact.DisplayName.Substring(0, 1).ToUpper();
-				bool newGroup = true;
-				if (groups.Contains(group)) {
-					newGroup = false;
-				}
+				bool newGroup = !groups.Contains(group);
 				foreach (CustomCellGroup ccg in cellGroups) {
 					if (ccg.Name.Equals(group)) {
 						newGroup = false;
@@ -306,9 +321,6 @@ namespace Stext
 
 				ContactListCell cell = ContactListCell.Create();
 				cell.SetName(contact.DisplayName);
-				cell.mobile = null;
-				cell._email = null;
-
 				cell.SetEmail(null);
 				cell.SetPhone(null);
 
@@ -323,7 +335,7 @@ namespace Stext
 							continue;
 						String number;
 						try {
-							number = phoneUtil.Format(phoneUtil.Parse(p.Number, "US"), PhoneNumberFormat.E164);
+							number = phoneUtil.Format(phoneUtil.Parse(p.Number, AppDelegate.GetCountryCode()), PhoneNumberFormat.E164);
 						} catch (Exception e) {
 							continue;
 						}
@@ -332,7 +344,7 @@ namespace Stext
 						registeredContacts.Remove(number);
 						cell.SetPhone(p.Number);
 						cell.registeredState = ContactListCell.STATE_REGISTERED;
-						conn.Execute("UPDATE PushContact Set Name = ? WHERE Number = ?", contact.DisplayName, number);
+						//conn.Execute("UPDATE PushContact Set Name = ? WHERE Number = ?", contact.DisplayName, number);
 						break;
 					}
 				}
@@ -348,22 +360,19 @@ namespace Stext
 						registeredContacts.Remove(e.Address);
 						cell.SetEmail(e.Address);
 						cell.registeredState = ContactListCell.STATE_REGISTERED;
-						conn.Execute("UPDATE PushContact Set Name = ? WHERE Number = ?", contact.DisplayName, e.Address);
+						//conn.Execute("UPDATE PushContact Set Name = ? WHERE Number = ?", contact.DisplayName, e.Address);
 						break;
 					}
 				}
+				if (cell._email == null && cell.mobile == null)
+					continue;
 				if (newGroup) {
-					if (cell._email != null || cell.mobile != null) {
-						tableCellGroup = new CustomCellGroup { Name = group };
-						cellGroups.Add(tableCellGroup);
-					}// else
-					//	continue;
+					tableCellGroup = new CustomCellGroup { Name = group };
+					cellGroups.Add(tableCellGroup);
 				}
-
-				if (cell._email != null || cell.mobile != null)
-					tableCellGroup.Cells.Add(cell);
+				tableCellGroup.Cells.Add(cell);
 			}
-			conn.Close();
+			//conn.Close();
 
 		}
 
@@ -398,25 +407,38 @@ namespace Stext
 					actionSheet.AddButton(this.email);
 				actionSheet.AddButton("Cancel");
 				actionSheet.Clicked += delegate(object a, UIButtonEventArgs b) {
-					using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+					using (var conn = new SQLite.SQLiteConnection(AppDelegate._dbPath)) {
 						string recipient = "";
-						int present_thread_id = 0;
+						//int present_thread_id = 0;
 
 						if (actionSheet.ButtonTitle(b.ButtonIndex) == this.mobile) {
-							recipient = this.mobile;
-						} else if (actionSheet.ButtonTitle(b.ButtonIndex) == this.email) {
-								recipient = this.email;
+							try {
+								var phoneUtil = PhoneNumberUtil.GetInstance();
+								recipient = phoneUtil.Format(phoneUtil.Parse(this.mobile, AppDelegate.GetCountryCode()), PhoneNumberFormat.E164);
+							} catch (Exception e) {
+								recipient = this.mobile;
 							}
+						} else if (actionSheet.ButtonTitle(b.ButtonIndex) == this.email) {
+							recipient = this.email;
+						}
 
 						if (actionSheet.ButtonTitle(b.ButtonIndex) != "Cancel") { 
+							/*
 							List<PushChatThread> pctList = conn.Query<PushChatThread>("select * from PushChatThread");
+
 							foreach (PushChatThread pct in pctList) {
 								if (pct.Number.Equals(recipient)) {
 									present_thread_id = pct.ID;
+									break;
 								}
 							}
-							if (present_thread_id == 0) {
-								var pct_val = new PushChatThread {
+							*/
+							PushChatThread thread = conn.FindWithQuery<PushChatThread>("select * from PushChatThread where Number = ?", recipient);
+							//if (present_thread_id == 0) {
+							if (thread == null) {
+								PushContact contact = conn.FindWithQuery<PushContact>("select * from PushContact where Number = ?", recipient);
+								thread = new PushChatThread {
+									DisplayName = contact.Name,
 									Number = recipient,
 									Recipient_id = 0,
 									TimeStamp = AppDelegate.CurrentTimeMillis(),
@@ -425,15 +447,16 @@ namespace Stext
 									Read = 0,
 									Type = "PushLocal"
 								};
-								conn.Insert(pct_val);
+								conn.Insert(thread);
 								conn.Commit();
 								conn.Close();
-								present_thread_id = pct_val.ID;
+								//present_thread_id = pct_val.ID;
 							}
 
-							appDelegate.chatView.setThreadID(present_thread_id);
+							//appDelegate.chatView.setThreadID(present_thread_id);
+							appDelegate.chatView.setThreadID(thread.ID);
 							appDelegate.chatView.setNumber(recipient);
-							appDelegate.chatView.setThreadSelected(this.name + " (" + recipient + ")");
+							appDelegate.chatView.setThreadSelected(thread.DisplayName + " (" + recipient + ")");
 							appDelegate.GoToView(appDelegate.chatView);
 						}
 					}

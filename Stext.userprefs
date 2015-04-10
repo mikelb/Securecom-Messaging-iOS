@@ -1,32 +1,19 @@
 ﻿<Properties StartupItem="Stext.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.6plus dev" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Views/RegistrationView.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Entities/STextConfig.cs">
     <Files>
-      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Entities/FileStorage.cs" Line="1" Column="1" />
-      <File FileName="Table/Cells/ChatBubbleCell.cs" Line="1" Column="1" />
-      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/MessageManager.cs" Line="1" Column="1" />
-      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/WrongVerificationCodeException.cs" Line="1" Column="1" />
-      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/AlreadyRegisteredException.cs" Line="1" Column="1" />
-      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/JsonFormatException.cs" Line="1" Column="1" />
-      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/TokenFormatException.cs" Line="1" Column="1" />
-      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/UnknownNumberException.cs" Line="1" Column="1" />
-      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/Exceptions/StaleDevicesException.cs" Line="1" Column="1" />
-      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Entities/STextConfig.cs" Line="1" Column="1" />
-      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Crypto/IdentityKeyUtil.cs" Line="1" Column="1" />
-      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/MessageManagerUtil.cs" Line="1" Column="1" />
-      <File FileName="AppDelegate.cs" Line="1" Column="1" />
-      <File FileName="Views/RegistrationView.cs" Line="33" Column="3" />
-      <File FileName="Views/ConfirmationView.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Push/MessageManager.cs" Line="294" Column="6" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Utils/KeyGenerator.cs" Line="1" Column="1" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Ratchet/HKDF.cs" Line="1" Column="1" />
+      <File FileName="Views/Contact/ContactListView.cs" Line="412" Column="10" />
+      <File FileName="Views/Chat/ChatView.cs" Line="1" Column="1" />
+      <File FileName="AppDelegate.cs" Line="143" Column="28" />
+      <File FileName="Views/Chat/ChatListView.cs" Line="235" Column="39" />
+      <File FileName="Entities/PushChatThread.cs" Line="1" Column="1" />
+      <File FileName="Main.cs" Line="21" Column="1" />
+      <File FileName="Views/ConfirmationView.cs" Line="221" Column="45" />
+      <File FileName="Securecom-Messaging-CSharp/Securecom.Messaging.CSharp/Entities/STextConfig.cs" Line="40" Column="3" />
     </Files>
-    <Pads>
-      <Pad Id="ProjectPad">
-        <State expanded="True">
-          <Node name="Stext" expanded="True">
-            <Node name="Images" selected="True" />
-          </Node>
-        </State>
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
@@ -62,5 +49,9 @@
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <DisabledProjects>
     <String>Securecom-Messaging-CSharp/Securecom-Messageing-Spec/Securecom.Messaging.Spec/Securecom.Messaging.Spec.csproj</String>
+    <String>Securecom-Messaging-CSharp/Securecom-Messaging-Spec/Securecom.Messaging.Spec/Securecom.Messaging.Spec.csproj</String>
   </DisabledProjects>
+  <MonoDevelop.Ide.ItemProperties.Stext>
+    <IPhoneZipBundleSettings CurrentFolder="/Users/aovanessian/Downloads" />
+  </MonoDevelop.Ide.ItemProperties.Stext>
 </Properties>

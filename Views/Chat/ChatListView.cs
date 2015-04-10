@@ -10,12 +10,7 @@ using Xamarin.Contacts;
 using System.Threading.Tasks;
 using System.Linq;
 using PhoneNumbers;
-using System.Security.Cryptography;
-using System.Text;
-using Org.BouncyCastle.Utilities.Encoders;
 using Securecom.Messaging;
-using System.IO;
-using MonoTouch.AddressBook;
 using Securecom.Messaging.Net;
 
 namespace Stext
@@ -38,7 +33,6 @@ namespace Stext
 
 		public override void ViewDidLoad()
 		{
-			Console.WriteLine("rkolli >>>>> @HERE1");
 			base.ViewDidLoad();
 			this.appDelegate = (AppDelegate)UIApplication.SharedApplication.Delegate;
 
@@ -81,51 +75,42 @@ namespace Stext
 
 			search.TextChanged += async (object sender, UISearchBarTextChangedEventArgs e) => {
 				search.SetShowsCancelButton(true, true);
-				string searchText = e.SearchText.ToLower();
-				Console.WriteLine("Search text = " + e.SearchText);
-				if (!e.SearchText.Equals("")) {
-					List<CustomCellGroup> mCellGroups = new List<CustomCellGroup>();
-					CustomCellGroup mTableCellGroup = new CustomCellGroup { Name = "No Results" };
-					int count = 0;
-
-					foreach (PushChatThread _c in pct) {
-						Console.WriteLine("Db Contacts = " + _c.Number);
-						bool found = false;
-						if (!String.IsNullOrEmpty(_c.Number)) {
-
-							found |= _c.Number.ToLower().Contains(searchText) || _c.DisplayName.ToLower().Contains(searchText); 
-
-							if (found) {
-								mTableCellGroup.Name = "Search Results";
-								Console.WriteLine("rkolli >>>>> Search result, Contact display name = " + _c.DisplayName);
-								ChatCell chatCell = ChatCell.Create();
-								chatCell.SetHeader(_c.DisplayName + " (" + _c.Number + ")");
-								chatCell.SetSubheading(_c.Snippet);
-								chatCell.SetThreadID(_c.ID);
-								chatCell.SetNumber(_c.Number);
-								chatCell.SetAvatar(null);
-								DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(_c.TimeStamp / 1000).ToLocalTime();
-								Console.WriteLine("rkolli >>>>> Time after format is " + epoch.ToString("HH:mm"));
-								chatCell.SetLabelTime("" + epoch.ToString("HH:mm"));
-								chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
-								mTableCellGroup.Cells.Insert(count, chatCell);
-								count++;
-							}
-						}
-					}
-
-
-					mCellGroups.Add(mTableCellGroup);
-
-					source = new CustomCellTableSource(mCellGroups);
-					source.RowSelectedAction = RowSelected;
-					source.DeleteAction = DeleteSelected;
-					source.DeleteTitle = "Delete";
-					table.Source = source;
-					table.ReloadData();
-				} else {
+				String searchText = e.SearchText.ToLower();
+				if (e.SearchText.Equals("")) {
 					PopulateTable();
+					return;
 				}
+				List<CustomCellGroup> mCellGroups = new List<CustomCellGroup>();
+				CustomCellGroup mTableCellGroup = new CustomCellGroup();
+				int count = 0;
+				foreach (PushChatThread thread in pct) {
+					if (String.IsNullOrEmpty(thread.Number))
+						continue;
+					if (!thread.Number.ToLower().Contains(searchText) && !thread.DisplayName.ToLower().Contains(searchText))
+						continue;
+					
+					ChatCell chatCell = ChatCell.Create();
+					chatCell.SetHeader(thread.DisplayName + " (" + thread.Number + ")");
+					chatCell.SetSubheading(thread.Snippet);
+					chatCell.SetThreadID(thread.ID);
+					chatCell.SetNumber(thread.Number);
+					chatCell.SetAvatar(null);
+					DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(thread.TimeStamp / 1000).ToLocalTime();
+					chatCell.SetLabelTime(epoch.ToString("HH:mm"));
+					chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+					mTableCellGroup.Cells.Insert(count, chatCell);
+					count++;
+				}
+					
+				mTableCellGroup.Name = (count == 0) ? "No Results" : "Search Results";
+				mCellGroups.Add(mTableCellGroup);
+
+				source = new CustomCellTableSource(mCellGroups);
+				source.RowSelectedAction = RowSelected;
+				source.DeleteAction = DeleteSelected;
+				source.DeleteTitle = "Delete";
+				table.Source = source;
+				table.ReloadData();
 			};
 
 		}
@@ -155,7 +140,7 @@ namespace Stext
 							loadingOverlay = new LoadingOverlay(bounds);
 							this.View.Add(loadingOverlay);
 
-							Task taskA = Task.Factory.StartNew(DoContactsSync);
+							Task taskA = Task.Factory.StartNew(StextUtil.RefreshPushDirectory);
 							taskA.Wait();
 							loadingOverlay.Hide();
 
@@ -174,16 +159,12 @@ namespace Stext
 							// last button added is the 'cancel' button (index of '2')
 							alert.Clicked += delegate(object a1, UIButtonEventArgs b1) {
 								if (b1.ButtonIndex == (0)) {
-									using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+									using (var conn = new SQLite.SQLiteConnection(AppDelegate._dbPath)) {
+										conn.Execute("DELETE FROM PushContact");
 										conn.Execute("DELETE FROM PushChatThread");
 										conn.Execute("DELETE FROM PushMessage");
 										conn.Commit();
 										conn.Close();
-									}
-									using (var conn1 = new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase)) {
-										conn1.Execute("DELETE FROM PushContact");
-										conn1.Commit();
-										conn1.Close();
 									}
 									Session.ClearSessions();
 									appDelegate.GoToView(appDelegate.registrationView);
@@ -198,74 +179,16 @@ namespace Stext
 			}
 		}
 
-		public async void DoContactsSync()
-		{
-			AddressBook book = new AddressBook();
-			List<String> contactlist = new List<String>();
-			if (!await book.RequestPermission()) {
-				Console.WriteLine("Permission denied by user or manifest");
-				return;
-			}
-			Console.WriteLine("rkolli >>>>> @RefreshPushDirectory, Address book count = " + book.Count());
-			var phoneUtil = PhoneNumberUtil.GetInstance();
-			foreach (Contact contact in book.OrderBy(c => c.LastName)) {
-				if (String.IsNullOrEmpty(contact.DisplayName))
-					continue;
-				foreach (Phone value in contact.Phones) {
-					if (value.Number.Contains("*") || value.Number.Contains("#"))
-						continue;
-					Console.WriteLine("Trying number " + value.Number);
-					try {
-						String number = phoneUtil.Format(phoneUtil.Parse(value.Number, "US"), PhoneNumberFormat.E164);
-						Console.WriteLine("rkolli >>>>> Actual Number = " + value.Number + ", After Format Number = " + number);
-						contactlist.Add(number);
-					} catch (Exception e) {
-					}
-				}
-				foreach (Email value in contact.Emails)
-					contactlist.Add(value.Address);
-			}
-			Dictionary<string,string> tokens = ConfirmationView.getDirectoryServerTokenDictionary(contactlist);
-			List<String> list = new List<String>();
-			foreach (string key in tokens.Keys)
-				list.Add(key);
-			Console.WriteLine("Total Contacts prepared to Send =  " + list.Count);
-			List<String> response = MessageManager.RetrieveDirectory(list);
-			List<String> result = new List<String>();
-			foreach (string key in response) {
-				if (tokens[key] != null)
-					result.Add(tokens[key]);
-			}
-			Console.WriteLine("count after intersection = " + result.Count);
-			Console.WriteLine("rkolli >>>>> we're here 1");
-			// Figure out where the SQLite database will be.
-			try {
-				using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase)) {
-					conn.BeginTransaction();
-					conn.Execute("DELETE FROM PushContact");
-					foreach (String contact in result) {
-						Console.WriteLine("we're here, push contact = " + contact);
-						var pcontact = new PushContact{ Number = contact };
-						conn.Insert(pcontact);
-					}
-					conn.Commit();
-				}
-			} catch (Exception e) {
-			}
-			Console.WriteLine("rkolli >>>>> we're here 3");
-		}
-
 		public void RowSelected(UITableView tableView, NSIndexPath indexPath)
 		{
 
 			ChatCell selectedCell = (ChatCell)source.CellGroups[indexPath.Section].Cells[indexPath.Row];
 			appDelegate.chatView.setThreadSelected(selectedCell.GetHeader());
-			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+			using (var conn = new SQLite.SQLiteConnection(AppDelegate._dbPath)) {
 				conn.Execute("UPDATE PushChatThread Set Read = ? WHERE ID = ?", 0, selectedCell.GetThreadID());
 				conn.Commit();
 				conn.Close();
 			}
-			Console.WriteLine("rkolli >>>>> @RowSelected, ThreadID = " + selectedCell.GetThreadID());
 			appDelegate.chatView.setThreadID(selectedCell.GetThreadID());
 			appDelegate.chatView.setNumber(selectedCell.GetNumber());
 			appDelegate.GoToView(appDelegate.chatView);
@@ -273,9 +196,6 @@ namespace Stext
 //			alert.Show();
 
 		}
-
-
-
 
 		private void ShowDoneButton()
 		{
@@ -288,7 +208,7 @@ namespace Stext
 		private void ShowEditButton()
 		{
 			List<PushChatThread> pctList;
-			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+			using (var conn = new SQLite.SQLiteConnection(AppDelegate._dbPath)) {
 				pctList = conn.Query<PushChatThread>("select * from PushChatThread");
 			}
 			if (pctList.Count <= 0) {
@@ -303,110 +223,42 @@ namespace Stext
 
 		public override void ViewWillAppear(bool animated)
 		{
-			Console.WriteLine("rkolli >>>>> @HERE2");
 			this.Title = "Chats";
 			this.PopulateTable();
 		}
-
+			
 		public void PopulateTable()
 		{
 			table.ReloadData();
-
 			UIImage thumbnail = null;
-
 			List<CustomCellGroup> cellGroups = new List<CustomCellGroup>();
 			tableCellGroup = new CustomCellGroup();
 			cellGroups.Add(tableCellGroup);
+			PhoneNumberUtil phoneUtil = PhoneNumberUtil.GetInstance();
+			AddressBook book = new AddressBook();
+			var conn = new SQLite.SQLiteConnection(AppDelegate._dbPath);
+			pct = conn.Query<PushChatThread>("SELECT * FROM PushChatThread ORDER BY TimeStamp DESC");
+			conn.Close();
+			int count = 0;
 
-			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
-				bool headerExists = false;
-				Console.WriteLine("rkolli >>>>> @PopulateTable, fetching messages");
-				pct = conn.Query<PushChatThread>("SELECT * FROM PushChatThread ORDER BY TimeStamp DESC");
-				int count = 0;
-				foreach (PushChatThread _m in pct) {
-					Console.WriteLine("Db APMessages, Number = " + _m.Number + ", message id = " + _m.TimeStamp + ", Message Body = " + _m.Snippet + ", ID = " + _m.ID + ", Read = " + _m.Read);
-//					List<ICustomCell> temp = tableCellGroup.Cells;
-//					foreach (ChatCell icc in temp) {
-//						Console.WriteLine("rkolli >>>>> Header = "+icc.GetHeader()+", message = "+_m.Snippet);
-//							if (icc.GetHeader().Equals(_m.Number)) {
-//								headerExists = true;
-//								ChatCell chatCell = ChatCell.Create();
-//								chatCell.SetHeader(_m.Number);
-//								chatCell.SetSubheading(_m.Snippet);
-//								DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(_m.TimeStamp / 1000).ToLocalTime();
-//								Console.WriteLine("rkolli >>>>> Time after format is " + epoch.ToString("HH:mm"));
-//								chatCell.SetLabelTime("" + epoch.ToString("HH:mm"));
-//								chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
-//								tableCellGroup.Cells.RemoveAt(_m.ID - 1);
-//								tableCellGroup.Cells.Insert(_m.ID - 1, chatCell); 
-//								break;
-//							}
-//						}
-					//}
+			foreach (PushChatThread thread in pct) {
+				String display_name = thread.DisplayName;
 
-					string display_name = _m.Number;
+				ChatCell chatCell = ChatCell.Create();
+				chatCell.SetHeader(display_name + " (" + thread.Number + ")");
+				chatCell.SetSubheading(thread.Snippet);
+				chatCell.SetThreadID(thread.ID);
+				chatCell.SetNumber(thread.Number);
+				chatCell.SetAvatar(thumbnail);
+				DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(thread.TimeStamp / 1000).ToLocalTime();
+				chatCell.SetLabelTime("" + epoch.ToString("HH:mm"));
+				chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+					
+				if (thread.Read != 0)
+					chatCell.BackgroundColor = UIColor.Green;
+				tableCellGroup.Cells.Insert(count, chatCell);
+				count++;
 
-					AddressBook book = new AddressBook();
-
-					foreach (Contact c in book) {
-						if (c.Phones.Any()) {
-							foreach (Phone p in c.Phones) {
-								string number = "";
-								if (!p.Number.Contains("*") || !p.Number.Contains("#")) {
-									try {
-										var phoneUtil = PhoneNumberUtil.GetInstance();
-										PhoneNumber numberObject = phoneUtil.Parse(p.Number, "US");
-										number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
-
-										if (_m.Number.Equals(number)) {
-											display_name = c.DisplayName;
-											thumbnail = c.GetThumbnail();
-											break;
-										}
-									} catch (Exception e) {
-										Console.WriteLine("Exception: " + e.Message);
-									}
-								}
-							}
-						}
-
-						if (c.Emails.Any()) {
-							foreach (Email e in c.Emails) {
-								if (_m.Number.Equals(e.Address)) {
-									display_name = c.DisplayName;
-									thumbnail = c.GetThumbnail();
-									break;
-								}
-							}
-						}
-					}
-
-
-					//if (!headerExists) {
-					conn.Execute("UPDATE PushChatThread Set DisplayName = ? WHERE ID = ?", display_name, _m.ID);
-					ChatCell chatCell = ChatCell.Create();
-					chatCell.SetHeader(display_name + " (" + _m.Number + ")");
-					chatCell.SetSubheading(_m.Snippet);
-					chatCell.SetThreadID(_m.ID);
-					chatCell.SetNumber(_m.Number);
-					chatCell.SetAvatar(thumbnail);
-					DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(_m.TimeStamp / 1000).ToLocalTime();
-					Console.WriteLine("rkolli >>>>> Time after format is " + epoch.ToString("HH:mm"));
-					chatCell.SetLabelTime("" + epoch.ToString("HH:mm"));
-					chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
-						
-					if (_m.Read != 0) {
-						chatCell.BackgroundColor = UIColor.Green;
-					}
-//					if ((idx & 1) == 1)
-//						chatCell.MarkAsRead();
-					tableCellGroup.Cells.Insert(count, chatCell);
-					count++;
-					//}
-
-				}
-				conn.Commit();
-				conn.Close();
 			}
 			source = new CustomCellTableSource(cellGroups);
 			source.RowSelectedAction = RowSelected;
@@ -416,33 +268,13 @@ namespace Stext
 
 			ShowEditButton();
 
-			/*
-			for (int x = 0; x <= 1; x++) {
-				ChatCell chatCell = ChatCell.Create ();
-				chatCell.SetHeader("John Doe");
-				chatCell.SetSubheading("My latest message");
-				chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
-				tableCellGroup.Cells.Add (chatCell);
-			}
-
-			for (int x = 0; x <= 1; x++) {
-				ChatCell chatCell = ChatCell.Create ();
-				chatCell.SetHeader("Jane Doe");
-				chatCell.SetSubheading("Her latest message");
-				chatCell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
-				chatCell.MarkAsRead ();
-				tableCellGroup.Cells.Add (chatCell);
-			}*/
-
-			
 		}
 
 		public void DeleteSelected(UITableView tableView, NSIndexPath indexPath)
 		{
 			ChatCell selectedCell = (ChatCell)source.CellGroups[indexPath.Section].Cells[indexPath.Row];
-			Console.WriteLine("rkolli >>>>> @RowSelected to DELETE, ThreadID = " + selectedCell.GetThreadID());
 			try {
-				using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToMessagesDatabase)) {
+				using (var conn = new SQLite.SQLiteConnection(AppDelegate._dbPath)) {
 					conn.Execute("DELETE FROM PushChatThread WHERE ID = ?", selectedCell.GetThreadID());
 					conn.Execute("DELETE FROM PushMessage WHERE Thread_id = ?", selectedCell.GetThreadID());
 					conn.Commit();

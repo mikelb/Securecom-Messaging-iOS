@@ -102,7 +102,7 @@ namespace Stext{
 			cell = SettingsCell.Create ();
 			cell.sectionDetail.Text = "Automatically delete older messages once a conversation thread reaches a certain length";
 			cell.sectionButton.ValueChanged += delegate {
-				Console.WriteLine("rkolli >>>>> HERE1");
+
 			};
 			tableCellGroup.Cells.Add (cell);
 
@@ -146,7 +146,6 @@ namespace Stext{
 
 
 		public void RowSelected(UITableView tableView, NSIndexPath indexPath){
-			Console.WriteLine("rkolli >>>>> @SettingsView RowSelected");
 			SettingsCell selectedCell = (SettingsCell)source.CellGroups[indexPath.Section].Cells[indexPath.Row];
 			if (selectedCell.sectionDetail.Text == "Turn this off to unregister your account") {
 				appDelegate.GoToView(appDelegate.registrationView);

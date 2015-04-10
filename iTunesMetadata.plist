@@ -1,6 +1,25 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>UIRequiredDeviceCapabilities</key>
+	<dict>
+		<key>armv7</key>
+		<true/>
+	</dict>
+	<key>artistName</key>
+	<string>Securecom Inc.</string>
+	<key>bundleDisplayName</key>
+	<string>Stext</string>
+	<key>bundleShortVersionString</key>
+	<string>0.1</string>
+	<key>bundleVersion</key>
+	<string>0.1</string>
+	<key>fileExtension</key>
+	<string>.app</string>
+	<key>gameCenterEnabled</key>
+	<false/>
+	<key>softwareSupportedDeviceIds</key>
+	<integer>9</integer>
 </dict>
 </plist>

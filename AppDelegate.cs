@@ -23,9 +23,7 @@ namespace Stext
 
 		public String DeviceToken;
 		private static string documents = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-		public static string _pathToMessagesDatabase = Path.Combine(documents, "Messages.db");
-		public static string _pathToContactsDatabase = Path.Combine(documents, "Securecom_Contacts.db");
-
+		public static string _dbPath = Path.Combine(documents, "Messages.db");
 
 #region VIEWS
 
@@ -57,9 +55,13 @@ namespace Stext
 
 		public override UIWindow Window { get; set; }
 
+		public static String GetCountryCode()
+		{
+			return "US"; //"CH"; //"IN";
+		}
+
 		public override void FinishedLaunching(UIApplication application)
 		{
-			Console.WriteLine("rkolli >>>>> @FinishedLaunching");
 			Window = new UIWindow(UIScreen.MainScreen.Bounds);
 			rootNavigationController = new UINavigationController();
 			alert = new Alert();
@@ -109,15 +111,9 @@ namespace Stext
 				if (!popView)
 					rootNavigationController.PushViewController(view, true);
 			} catch (Exception e) {
-				WriteDebugOutput(e.Message);
+				Console.WriteLine(e.Message);
 			}
 		}
-
-		public static void WriteDebugOutput(String outputString)
-		{
-			Console.WriteLine(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + " - " + outputString);
-		}
-
 
 		private void InitViews()
 		{
@@ -135,13 +131,9 @@ namespace Stext
 
 			// Create and Initialize Apple push message DB
 			// Figure out where the SQLite database will be.
-			using (var conn = new SQLite.SQLiteConnection(_pathToMessagesDatabase)) {
-				Console.WriteLine("rkolli >>>>> Connect to Messages DB, if doesn't exist! create PushChatThread, PushMessage tables");
+			using (var conn = new SQLite.SQLiteConnection(_dbPath)) {
 				conn.CreateTable<PushChatThread>();
 				conn.CreateTable<PushMessage>();
-			}
-
-			using (var conn = new SQLite.SQLiteConnection(AppDelegate._pathToContactsDatabase)) {
 				conn.CreateTable<PushContact>();
 			}
 		}
@@ -161,26 +153,26 @@ namespace Stext
 				new MonoTouch.ObjCRuntime.Selector("stringWithFormat:").Handle,
 				new NSString("%@").Handle,
 				deviceToken.Handle)).ToString();
-
 			Console.WriteLine("RegisteredForRemoteNotifications where deviceToken=" + DeviceToken);
+			if (config.Registered) {
+				Console.WriteLine("re-registering apn id with the server");
+				String dt = DeviceToken;
+				dt = dt.Replace("<", String.Empty).Replace(">", String.Empty).Replace(" ", String.Empty);
+				MessageManager.RegisterApnId(dt);
+			}
+
 		}
 
 		public override void ReceivedRemoteNotification(UIApplication application, NSDictionary userInfo)
 		{
-			Console.WriteLine("rkolli >>>>> @ReceivedRemoteNotification");
 			if (userInfo != null) {
 				ProcessNotification(userInfo, false);
 			}
 		}
 
-		private static String ProcessIncomingMessage(String msg)
-		{
-			return MessageManager.ProcessIncomingMessage(msg);
-		}
 
 		private void ProcessNotification(NSDictionary options, bool fromFinishedLaunching)
 		{
-			Console.WriteLine("rkolli >>>>> @ProcessNotification");
 
 			if (!options.ContainsKey(new NSString("aps")))
 				return;
@@ -190,9 +182,11 @@ namespace Stext
 			if (options.ContainsKey(new NSString("m"))) {
 				NSString m = options.ObjectForKey(new NSString("m")) as NSString;
 				try { //do something with the message
-					String payload = m.ToString();
-					String msg = ProcessIncomingMessage(payload);
-					updateChatThread(payload, msg);
+					IncomingMessage message = MessageManager.ReadPushMessage(m.ToString());
+					if (message.Receipt)
+						alert.showAlert("Receipt", "got receipt for " + message.MessageId);
+					else
+						updateChatThread(message, MessageManager.ProcessIncomingMessage(message));
 				} catch (Exception e) {
 					Console.WriteLine("exception: " + e.Message);
 					Console.WriteLine("stack trace: " + e.StackTrace);
@@ -212,78 +206,46 @@ namespace Stext
 			}
 		}
 
-		private void updateChatThread(string payload, string msg)
+		private void updateChatThread(IncomingMessage message, string msg)
 		{
-			Console.WriteLine("rkolli >>>>> @updateChatThread, payload = " + payload);
-			const string sender_pattern = "\"sender\":\"";
-			const string messageid_pattern = "\"messageId\":";
-			int a = payload.IndexOf(sender_pattern) + sender_pattern.Length;
-			int b = payload.IndexOf("\"", a);
-			string sender = payload.Substring(a, b - a);
-
-			int x = payload.IndexOf(messageid_pattern) + messageid_pattern.Length;
-			int y = payload.IndexOf(",", x);
-			string messageid = payload.Substring(x, y - x);
-			Console.WriteLine("rkolli >>>>> @ProcessNotification, sender = " + sender + ", messageid = " + messageid + ", message body = " + msg);
 			// Figure out where the SQLite database will be.
-			using (var conn = new SQLite.SQLiteConnection(_pathToMessagesDatabase)) {
-				int present_thread_id = 0;
-				// Check if there is an existing thread for this sender
-				List<PushChatThread> pctList = conn.Query<PushChatThread>("select * from PushChatThread");
+			var conn = new SQLite.SQLiteConnection(_dbPath);
+			String number = message.Sender;
+			// Check if there is an existing thread for this sender
 
-				if (pctList != null && pctList.Count > 0) {
-					foreach (PushChatThread pct in pctList) {
-						Console.WriteLine("rkolli >>>>> @updateChatThread" + ", Count = " + pctList.Count);
-						Console.WriteLine("rkolli >>>>> @updateChatThread" + ", Number = " + pct.Number + ", Sender = " + sender + ", ID = " + pct.ID);
-						var number = pct.Number;
-						if (!number.Contains("@")) {
-							var phoneUtil = PhoneNumberUtil.GetInstance();
-							PhoneNumber numberObject = phoneUtil.Parse(pct.Number, "US");
-							number = phoneUtil.Format(numberObject, PhoneNumberFormat.E164);
-						}
-
-						if (number.Equals(sender)) {
-							present_thread_id = pct.ID;
-							Console.WriteLine("rkolli >>>>> @updateChatThread, updaing chat row, present_thread_id = " + present_thread_id);
-							conn.Execute("UPDATE PushChatThread Set Snippet = ?, TimeStamp = ?, Message_count = ?, Read = ?, Type = ? WHERE ID = ?", msg, messageid, 1, 1, "Push", present_thread_id);
-							Console.WriteLine("rkolli >>>>> @updateChatThread, update successful");
-							conn.Commit();
-							break;
-						}
-					}
-				}
-
-				if (present_thread_id == 0) {
-					var pct_val = new PushChatThread {
-						Number = sender,
-						Recipient_id = 0,
-						TimeStamp = Convert.ToInt64(messageid),
-						Message_count = 1,
-						Snippet = msg,
-						Read = 1,
-						Type = "Push"
-					};
-					conn.Insert(pct_val);
-					present_thread_id = pct_val.ID;
-					//conn.Execute("UPDATE PushChatThread Set Recipient_id = ? WHERE Number = ?", present_thread_id, sender);
-					Console.WriteLine("rkolli >>>>> @updateChatThread, inserting new chat row, present_thread_id = " + present_thread_id);
-				}
-				Console.WriteLine("rkolli >>>>> inserting message into the DB");
-
-				var pmessage = new PushMessage {
-					Thread_id = present_thread_id,
-					Number = sender,
-					TimeStamp = CurrentTimeMillis(),
-					TimeStamp_Sent = Convert.ToInt64(messageid),
-					Read = 1,
-					Message = msg,
-					Status = true,
-					Service = "Push"
-				};
-				conn.Insert(pmessage);
+			PushChatThread thread = conn.FindWithQuery<PushChatThread>("select * from PushChatThread where Number = ?", number);
+			if (thread != null) {
+				conn.Execute("UPDATE PushChatThread Set Snippet = ?, TimeStamp = ?, Message_count = ?, Read = ?, Type = ? WHERE ID = ?", msg, message.MessageId, 1, 1, "Push", thread.ID);
 				conn.Commit();
-				conn.Close();
+			} else {
+				PushContact contact = conn.FindWithQuery<PushContact>("select * from PushContact where Number = ?", number);
+				thread = new PushChatThread {
+					DisplayName = contact.Name,
+					Number = number,
+					Recipient_id = 0,
+					TimeStamp = Convert.ToInt64(message.MessageId),
+					Message_count = 1,
+					Snippet = msg,
+					Read = 1,
+					Type = "Push"
+				};
+				conn.Insert(thread);
+				//conn.Execute("UPDATE PushChatThread Set Recipient_id = ? WHERE Number = ?", present_thread_id, sender);
 			}
+
+			var pmessage = new PushMessage {
+				Thread_id = thread.ID,
+				Number = number,
+				TimeStamp = CurrentTimeMillis(),
+				TimeStamp_Sent = Convert.ToInt64(message.MessageId),
+				Read = 1,
+				Message = msg,
+				Status = true,
+				Service = "Push"
+			};
+			conn.Insert(pmessage);
+			conn.Commit();
+			conn.Close();
 			RefreshChatListView();
 		}
 
